@@ -76,9 +76,10 @@ This is a **development fork, not a qualified browser release**. The native
 Playwright patch applies cleanly to the exact ESR base. Policy, branding,
 packaging, and validation code are in the tree. The native engine compiled and
 packaged successfully in run 40529984912. The isolated-frame port now passes the
-native qualification suite in [run 40584634292](https://github.com/EnclaveHost/enclave-browser/actions/runs/40584634292):
+native qualification suite in [run 40585509254](https://github.com/EnclaveHost/enclave-browser/actions/runs/40585509254):
 page interaction, context cookies, interception, downloads, cross-site and nested
-frame clicks, keyboard focus, process-changing navigation, and TLS/CSP rejection.
+frame clicks, keyboard focus, process-changing navigation, TLS/CSP rejection, and
+960×600 VP9 decode/playback.
 That run updates the Juggler JavaScript in the hash-verified compiled engine and
 refuses native-source changes; it does not qualify the separate Alpine/musl port.
 
@@ -126,6 +127,7 @@ After building, install the pinned client and run the test against our executabl
 ```sh
 cd enclave/tests
 npm ci
+# FFmpeg with libvpx is required to create the local video fixture.
 ENCLAVE_BROWSER_EXECUTABLE=../../obj-enclave/dist/bin/firefox npm run smoke
 ```
 
