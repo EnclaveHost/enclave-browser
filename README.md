@@ -75,13 +75,16 @@ builds are not the source baseline for this fork.
 This is a **development fork, not a qualified browser release**. The native
 Playwright patch applies cleanly to the exact ESR base. Policy, branding,
 packaging, and validation code are in the tree. The native engine compiled and
-packaged successfully in run 40529984912. Page interaction, context cookies,
-network interception, downloads, TLS rejection and CSP rejection passed. The
-cross-site iframe test failed, so this remains unqualified for replacement.
+packaged successfully in run 40529984912. The isolated-frame port now passes the
+native qualification suite in [run 40584634292](https://github.com/EnclaveHost/enclave-browser/actions/runs/40584634292):
+page interaction, context cookies, interception, downloads, cross-site and nested
+frame clicks, keyboard focus, process-changing navigation, and TLS/CSP rejection.
+That run updates the Juggler JavaScript in the hash-verified compiled engine and
+refuses native-source changes; it does not qualify the separate Alpine/musl port.
 
-Full Playwright compatibility is not established. In particular, upstream Juggler
-assumes cross-process iframes are disabled; Enclave keeps them enabled. Cross-origin
-frame automation is a required qualification test and may need further porting.
+Full Playwright compatibility is not established. Enclave routes automation to
+each frame's isolated process and retains site isolation. The Alpine engine build,
+RV64 port and target-VM tests remain release gates.
 File upload, screencasting, permission emulation, context isolation, and client
 versions other than 1.62.1 also require validation. An expected failure in these
 areas must not be hidden by weakening the desktop policy.

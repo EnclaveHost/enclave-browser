@@ -43,7 +43,6 @@ export class JugglerFrameChild extends JSWindowActorChild {
 
   actorCreated() {
     this._isProcessRoot = this.manager.isProcessRoot;
-    if (Services.env.get("ENCLAVE_JUGGLER_TRACE")) dump(`FISSION child ${this.browsingContext.id} root=${this._isProcessRoot} parent=${this.browsingContext.parent?.id}\n`);
     this.actorName = `content::${this.browsingContext.browserId}/${this.browsingContext.id}/${++sameProcessInstanceNumber}`;
 
     this._eventListeners.push(helper.addEventListener(this.contentWindow, 'load', event => {

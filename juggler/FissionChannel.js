@@ -27,7 +27,6 @@ export class FissionChannel {
       get: (_, method) => (...args) => {
         const event = args[0];
         if (namespace === 'page') {
-          if (Services.env.get("ENCLAVE_JUGGLER_TRACE") && ['pageFrameAttached', 'runtimeExecutionContextCreated', 'pageNavigationCommitted'].includes(method)) dump(`FISSION ${method} ${JSON.stringify(event)}\n`);
           if (method === 'runtimeExecutionContextsCleared') {
             for (const [id, owner] of this._contexts) {
               if (owner !== endpoint) continue;
@@ -57,7 +56,6 @@ export class FissionChannel {
   }
 
   bindToActor(actor) {
-    if (Services.env.get("ENCLAVE_JUGGLER_TRACE")) dump(`FISSION bind ${actor.browsingContext.id} parent=${actor.browsingContext.parent?.id}\n`);
     let endpoint = this._main;
     if (actor.browsingContext.parent) {
       const id = actor.browsingContext.id;
