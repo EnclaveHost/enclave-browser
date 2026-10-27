@@ -12,7 +12,7 @@ vm.runInNewContext(read('enclave/enclave.cfg'), {
 });
 assert.equal(locked.get('javascript.options.content_process_write_protect_code'), true);
 assert.equal(locked.get('fission.autostart'), true);
-assert.equal(locked.get('fission.webContentIsolationStrategy'), 3);
+assert.equal(locked.get('fission.webContentIsolationStrategy'), 1);
 for (const pref of ['browser.safebrowsing.malware.enabled', 'browser.safebrowsing.phishing.enabled', 'browser.safebrowsing.downloads.enabled', 'extensions.blocklist.enabled', 'security.fileuri.strict_origin_policy'])
   assert.equal(locked.get(pref), true, pref);
 assert.equal(defaults.get('dom.ipc.processCount'), 2);
