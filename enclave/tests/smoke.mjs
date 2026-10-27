@@ -60,19 +60,31 @@ try {
   });
   await check('cross-site iframe with site isolation retained', async () => {
     await page.evaluate(url => { const frame = document.createElement('iframe'); frame.src = url; document.body.append(frame); }, `http://localhost:${port}/frame`);
-    console.log('Frame tree before iframe interaction:', page.frames().map(f => ({ url: f.url(), parent: f.parentFrame()?.url() })));
     const frame = page.frameLocator('iframe');
     await frame.getByLabel('Name').fill('isolated frame');
     assert.equal(await frame.getByLabel('Name').inputValue(), 'isolated frame');
-    await frame.locator('body').evaluate(body => {
-      window.inputEvents = [];
-      for (const type of ['pointerdown', 'pointerup', 'mousedown', 'mouseup', 'click'])
-        body.addEventListener(type, e => window.inputEvents.push({ type, tag: e.target.tagName, x: e.clientX, y: e.clientY }), true);
-    });
     await frame.getByRole('button', { name: 'Submit' }).click();
-    console.log('Isolated frame input events:', await frame.locator('body').evaluate(() => window.inputEvents));
     await frame.locator('#result').filter({ hasText: 'isolated frame' }).waitFor();
     assert.equal(await frame.locator('#result').textContent(), 'isolated frame');
+  });
+  await check('nested isolated frames, keyboard focus and navigation', async () => {
+    const outer = page.frameLocator('iframe');
+    await outer.locator('body').evaluate((body, url) => {
+      const frame = document.createElement('iframe'); frame.src = url; body.append(frame);
+    }, `${origin}/nested`);
+    const nested = outer.frameLocator('iframe');
+    await nested.getByLabel('Name').fill('nested');
+    await nested.getByLabel('Name').press('End');
+    await nested.getByLabel('Name').pressSequentially(' keyboard');
+    assert.equal(await nested.getByLabel('Name').inputValue(), 'nested keyboard');
+    await nested.getByRole('button', { name: 'Submit' }).click();
+    await nested.locator('#result').filter({ hasText: 'nested keyboard' }).waitFor();
+    await page.locator('iframe').evaluate((frame, url) => { frame.src = url; }, `${origin}/same-process`);
+    await outer.getByLabel('Name').fill('after navigation');
+    assert.equal(await outer.getByLabel('Name').inputValue(), 'after navigation');
+    await page.locator('iframe').evaluate(frame => frame.remove());
+    await page.getByLabel('Name').fill('top-level focus restored');
+    assert.equal(await page.getByLabel('Name').inputValue(), 'top-level focus restored');
   });
   await check('TLS bypass is rejected', () => assert.rejects(browser.newContext({ ignoreHTTPSErrors: true }), /Enclave Browser policy forbids/));
   await check('CSP bypass is rejected', () => assert.rejects(browser.newContext({ bypassCSP: true }), /Enclave Browser policy forbids/));
