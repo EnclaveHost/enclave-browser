@@ -60,6 +60,7 @@ try {
   });
   await check('cross-site iframe with site isolation retained', async () => {
     await page.evaluate(url => { const frame = document.createElement('iframe'); frame.src = url; document.body.append(frame); }, `http://localhost:${port}/frame`);
+    console.log('Frame tree before iframe interaction:', page.frames().map(f => ({ url: f.url(), parent: f.parentFrame()?.url() })));
     const frame = page.frameLocator('iframe');
     await frame.getByLabel('Name').fill('isolated frame');
     await frame.getByRole('button', { name: 'Submit' }).click();

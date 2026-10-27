@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+globalThis.Services = { env: { get: () => '' } };
 const source = fs.readFileSync(new URL('../../juggler/FissionChannel.js', import.meta.url), 'utf8');
 const { FissionChannel } = await import('data:text/javascript,' + encodeURIComponent(source));
 const channels = [];

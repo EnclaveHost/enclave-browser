@@ -32,7 +32,8 @@ jobs:
         env:
           ENCLAVE_BROWSER_EXECUTABLE: ${{ github.workspace }}/candidate/firefox/firefox
           ENCLAVE_TEST_ARTIFACTS: ${{ github.workspace }}/artifacts
-          DEBUG: pw:browser
+          DEBUG: pw:browser,pw:protocol
+          ENCLAVE_JUGGLER_TRACE: "1"
         run: |
           mkdir -p artifacts
           cd enclave/tests
