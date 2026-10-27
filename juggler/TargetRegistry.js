@@ -1045,19 +1045,9 @@ class BrowserContext {
   }
 
   setIgnoreHTTPSErrors(ignoreHTTPSErrors) {
-    if (this.ignoreHTTPSErrors === ignoreHTTPSErrors)
-      return;
-    this.ignoreHTTPSErrors = ignoreHTTPSErrors;
-    const certOverrideService = Cc[
-      "@mozilla.org/security/certoverride;1"
-    ].getService(Ci.nsICertOverrideService);
-    if (ignoreHTTPSErrors) {
-      Preferences.set("network.stricttransportsecurity.preloadlist", false);
-      Preferences.set("security.cert_pinning.enforcement_level", 0);
-      certOverrideService.setDisableAllSecurityChecksAndLetAttackersInterceptMyDataForUserContext(this.userContextId, true);
-    } else {
-      certOverrideService.setDisableAllSecurityChecksAndLetAttackersInterceptMyDataForUserContext(this.userContextId, false);
-    }
+    if (ignoreHTTPSErrors)
+      throw new Error('Enclave Browser policy forbids ignoring TLS certificate errors');
+    this.ignoreHTTPSErrors = false;
   }
 
   setDefaultUserAgent(userAgent) {

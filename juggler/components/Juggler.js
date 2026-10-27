@@ -18,30 +18,49 @@ const helper = new Helper();
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-// Register JSWindowActors that will be instantiated for each frame.
-ActorManagerParent.addJSWindowActors({
-  JugglerFrame: {
-    parent: {
-      esModuleURI: 'chrome://juggler/content/JugglerFrameParent.jsm',
-    },
-    child: {
-      esModuleURI: 'chrome://juggler/content/content/JugglerFrameChild.jsm',
-      events: {
-        // Normally, we instantiate an actor when a new window is created.
-        DOMWindowCreated: {},
-        // However, for same-origin iframes, the navigation from about:blank
-        // to the URL will share the same window, so we need to also create
-        // an actor for a new document via DOMDocElementInserted.
-        DOMDocElementInserted: {},
-        // Also, listening to DOMContentLoaded.
-        DOMContentLoaded: {},
-        DOMWillOpenModalDialog: {},
-        DOMModalDialogClosed: {},
+function enableAutomation() {
+  const preferences = {
+    'dom.input_events.security.minNumTicks': 0,
+    'dom.input_events.security.minTimeElapsedInMS': 0,
+    'dom.iframe_lazy_loading.enabled': false,
+    'dom.permissions.testing.enabled': true,
+    'dom.file.createInChild': true,
+    'permissions.isolateBy.userContext': true,
+    'dom.ipc.processPrelaunch.enabled': false,
+    'focusmanager.testmode': true,
+    'browser.tabs.warnOnClose': false,
+  };
+  for (const [name, value] of Object.entries(preferences)) {
+    if (typeof value === 'boolean')
+      Services.prefs.setBoolPref(name, value);
+    else
+      Services.prefs.setIntPref(name, value);
+  }
+  // Register JSWindowActors that will be instantiated for each frame.
+  ActorManagerParent.addJSWindowActors({
+    JugglerFrame: {
+      parent: {
+        esModuleURI: 'chrome://juggler/content/JugglerFrameParent.jsm',
       },
+      child: {
+        esModuleURI: 'chrome://juggler/content/content/JugglerFrameChild.jsm',
+        events: {
+          // Normally, we instantiate an actor when a new window is created.
+          DOMWindowCreated: {},
+          // However, for same-origin iframes, the navigation from about:blank
+          // to the URL will share the same window, so we need to also create
+          // an actor for a new document via DOMDocElementInserted.
+          DOMDocElementInserted: {},
+          // Also, listening to DOMContentLoaded.
+          DOMContentLoaded: {},
+          DOMWillOpenModalDialog: {},
+          DOMModalDialogClosed: {},
+        },
+      },
+      allFrames: true,
     },
-    allFrames: true,
-  },
-});
+  });
+}
 
 let browserStartupFinishedCallback;
 let browserStartupFinishedPromise = new Promise(x => browserStartupFinishedCallback = x);
@@ -54,7 +73,7 @@ export class Juggler {
     return ChromeUtils.generateQI([ Ci.nsICommandLineHandler, Ci.nsIObserver ]);
   }
   get helpInfo() {
-    return "  --juggler            Enable Juggler automation\n";
+    return "  --juggler-pipe       Enable Enclave automation (requires ENCLAVE_BROWSER_AUTOMATION=1)\n";
   }
 
   handle(cmdLine) {
@@ -78,6 +97,10 @@ export class Juggler {
         const jugglerPipeFlag = cmdLine.handleFlag('juggler-pipe', false);
         if (!jugglerPipeFlag)
           return;
+
+        if (Services.env.get('ENCLAVE_BROWSER_AUTOMATION') !== '1')
+          throw new Error('Juggler requires ENCLAVE_BROWSER_AUTOMATION=1 and a dedicated automation profile');
+        enableAutomation();
 
         this._silent = cmdLine.findFlag('silent', false) >= 0;
         if (this._silent) {

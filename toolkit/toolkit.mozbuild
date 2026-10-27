@@ -155,6 +155,7 @@ if CONFIG["ENABLE_WEBDRIVER"]:
         "/testing/firefox-ui",
         "/testing/marionette",
         "/juggler",
+        "/enclave",
         "/toolkit/components/telemetry/tests/marionette",
     ]
 

@@ -244,6 +244,8 @@ export class BrowserHandler {
   }
 
   async ['Browser.setBypassCSP']({browserContextId, bypassCSP}) {
+    if (bypassCSP)
+      throw new Error('Enclave Browser policy forbids bypassing Content Security Policy');
     await this._targetRegistry.browserContextForId(browserContextId).applySetting('bypassCSP', nullToUndefined(bypassCSP));
   }
 

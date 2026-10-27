@@ -1,0 +1,11 @@
+/* Keep site animation and transition timing intact: login forms can wait for
+   completion events before enabling input. Reduced motion and the frame-rate
+   preference provide the general lightweight behavior without breaking events. */
+*, *::before, *::after {
+  scroll-behavior: auto !important;
+}
+
+/* Limit the expensive decorative Google homepage glow to the homepage itself. */
+@-moz-document url("https://www.google.com/"), url("https://www.google.com/webhp") {
+  .fZhNMe, .Tdahud { display: none !important; }
+}

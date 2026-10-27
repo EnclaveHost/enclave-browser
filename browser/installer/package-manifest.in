@@ -208,6 +208,8 @@
 
 @RESPATH@/chrome/juggler@JAREXT@
 @RESPATH@/chrome/juggler.manifest
+@RESPATH@/enclave.cfg
+@RESPATH@/defaults/pref/enclave.js
 
 ; Modules
 @RESPATH@/browser/modules/*

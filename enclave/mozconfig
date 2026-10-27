@@ -1,0 +1,10 @@
+ac_add_options --enable-application=browser
+ac_add_options --with-branding=browser/branding/enclave
+ac_add_options --enable-optimize
+ac_add_options --disable-debug
+ac_add_options --disable-debug-symbols
+ac_add_options --disable-tests
+ac_add_options --disable-updater
+ac_add_options --disable-crashreporter
+mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-enclave
+mk_add_options MOZ_MAKE_FLAGS=-j2

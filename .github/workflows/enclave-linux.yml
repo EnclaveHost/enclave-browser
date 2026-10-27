@@ -1,0 +1,46 @@
+name: Enclave Linux build
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    env:
+      MOZBUILD_STATE_PATH: ${{ github.workspace }}/.mozbuild
+      MOZCONFIG: ${{ github.workspace }}/enclave/mozconfig
+      MOZ_AUTOMATION: "1"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 1
+      - name: Policy checks
+        run: node --experimental-vm-modules enclave/tests/policy.mjs
+      - name: Bootstrap native build tools
+        run: |
+          mkdir -p artifacts "$MOZBUILD_STATE_PATH"
+          ./mach --no-interactive bootstrap --application-choice=browser > artifacts/bootstrap.log 2>&1
+      - name: Compile native engine
+        run: ./mach build > artifacts/build.log 2>&1
+      - name: Package
+        run: ./mach package > artifacts/package.log 2>&1
+      - name: Pinned automation qualification
+        env:
+          ENCLAVE_BROWSER_EXECUTABLE: ${{ github.workspace }}/obj-enclave/dist/bin/firefox
+          ENCLAVE_TEST_ARTIFACTS: ${{ github.workspace }}/artifacts/smoke
+        run: |
+          cd enclave/tests
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm run smoke > ../../artifacts/smoke.log 2>&1
+      - name: Preserve logs and investigation package
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: enclave-browser-investigation-${{ github.sha }}
+          path: |
+            artifacts/
+            obj-enclave/dist/*.tar.xz
+            obj-enclave/dist/*.tar.gz
+            obj-enclave/dist/*.tar.bz2
+          retention-days: 7

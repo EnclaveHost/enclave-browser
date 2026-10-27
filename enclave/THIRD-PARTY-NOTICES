@@ -1,0 +1,6 @@
+Enclave Browser derives from Mozilla Firefox ESR. Existing source headers and
+LICENSE govern the Mozilla source and imported files. Juggler and the native
+bootstrap patch were obtained from microsoft/playwright at the revision in
+upstream.json. Preserve their per-file MPL-2.0 headers; the upstream repository
+Apache-2.0 license is also included in PLAYWRIGHT-LICENSE. Mozilla and Firefox
+trademarks belong to Mozilla. This fork is not an official Mozilla product.

@@ -1,0 +1,60 @@
+{
+  "firefox": {
+    "tag": "FIREFOX_153_5_1esr_RELEASE",
+    "gitCommit": "6cd88e7d45fe7a5b0b87b984fb32a8779151860e",
+    "installedPackage": "153.5.1esr-1~deb13u1"
+  },
+  "playwright": {
+    "version": "1.62.1",
+    "gitCommit": "26a9e470a7b3c7822084b09fb7f13902c5f37b51",
+    "nativeBaseCommit": "f1b6c0f86b96b7e0688c26f65803576f27cdaf88"
+  },
+  "restoredUpstreamFiles": [
+    "security/manager/ssl/nsCertOverrideService.cpp",
+    "toolkit/components/enterprisepolicies/EnterprisePoliciesParent.sys.mjs",
+    "toolkit/mozapps/update/UpdateService.sys.mjs",
+    "services/settings/Utils.sys.mjs",
+    "modules/libpref/init/StaticPrefList.yaml"
+  ],
+  "sources": {
+    "browser_patches/firefox/UPSTREAM_CONFIG.sh": "e5008bedc327907c9ff55fe275bcef25cdee4cd6e6b100175cf7fae68a014a8b",
+    "browser_patches/firefox/juggler/ChannelEventSink.sys.mjs": "e1fdca3fc0045776687c208abde6845c5c3b48dd11cdbdfce399c1dbca972dfb",
+    "browser_patches/firefox/juggler/Helper.js": "4875ec793cf2bda6f084fe4c0722eb3ddf948c1de1b19a5f0b0c91ceda196948",
+    "browser_patches/firefox/juggler/JugglerFrameParent.jsm": "c1185eba7e2b5456890fc724b1e21951eb597cddd4aa33eafd6a7df9b63d1443",
+    "browser_patches/firefox/juggler/NetworkObserver.js": "efa35f8aa52bf42a1867dd37469e6932db9c890b8836e3a87228e76c3eec5f88",
+    "browser_patches/firefox/juggler/SimpleChannel.js": "2b1836efe571413a150476d0b303670e248bb3960fd534be5f7b7866205110a0",
+    "browser_patches/firefox/juggler/TargetRegistry.js": "35db3ad21a5267019ea27cf9191ff60fd8658b7151ec0d24083566a63cf6e278",
+    "browser_patches/firefox/juggler/components/Juggler.js": "b3223e2ce1c36fddef2f99ae68d893a8613c345e6499219e2d27f164d74b5ee4",
+    "browser_patches/firefox/juggler/components/components.conf": "cea0ef27b8300c1d7cfd8a923cb96933c2e7cbfb2b77075afe8d3f2445aaceaf",
+    "browser_patches/firefox/juggler/components/moz.build": "8a683e9d5d0d0c7aa01551b6f2eab6dd631e9f9c97b1faf143cf3386e4ae323d",
+    "browser_patches/firefox/juggler/content/FrameTree.js": "5077bc6a3f2262d703d73cfc3184515132b408856976bd24d62e93a8703b12c5",
+    "browser_patches/firefox/juggler/content/JugglerFrameChild.jsm": "fa008a754c97d9ac9da6f488f7b510b15dd676208e2ceab7c6e1e06d8e0d432f",
+    "browser_patches/firefox/juggler/content/PageAgent.js": "8d6c4033a0a3afb4157b4c72e4c16b79ea74165b40ceb0cd6a859dea570dcfee",
+    "browser_patches/firefox/juggler/content/Runtime.js": "7b0da98830a4f773f4e8cd2c158fa31b419927f5c9f432db096c464b381deb34",
+    "browser_patches/firefox/juggler/content/WorkerMain.js": "58ace7987ecea4b4fd3fe9aa25c4266dc5b17957fcfa71b97eff9e4b51c60d19",
+    "browser_patches/firefox/juggler/content/hidden-scrollbars.css": "07fe80c5dfd28e43eaf52dbd264f0c36a1e82cffbc3a65eeecc28f3a5438e5f2",
+    "browser_patches/firefox/juggler/content/main.js": "274efc3b6f8b97f05b4c554fc69672f7f9969e0e607d53a5e091afd3d5b5ee44",
+    "browser_patches/firefox/juggler/jar.mn": "66abcfd3d1d1df7ef82f362ebff5851f772d7081cb82e2a7736b5ed7e5abc319",
+    "browser_patches/firefox/juggler/moz.build": "856ea9d380add414d32357cb719d2c61e494d2ea3ac5e8333b8eedc72f3c087d",
+    "browser_patches/firefox/juggler/pipe/components.conf": "995b0a497a2a2b869a923731b139db9a05c25afc92abb09a50fca0fd21a748a0",
+    "browser_patches/firefox/juggler/pipe/moz.build": "6a2ea871309911891eec0ca208f67900ad4a7e503f461e346f8eef13097ab30c",
+    "browser_patches/firefox/juggler/pipe/nsIRemoteDebuggingPipe.idl": "d4cb2daeb7f57f4efccf0d159b40e9841c5c04376e304ea557f592a9a66ec172",
+    "browser_patches/firefox/juggler/pipe/nsRemoteDebuggingPipe.cpp": "61d9d58dbe036c077f543554eb07f545b3062a93dc1674a70fda8960a59f4cb9",
+    "browser_patches/firefox/juggler/pipe/nsRemoteDebuggingPipe.h": "ba6309e08b1c5947661e1beef8425efaf0a39c1f1157a11fef27ec74327e5dca",
+    "browser_patches/firefox/juggler/protocol/BrowserHandler.js": "8963a31c877509cde244bfb978910775c0d8bef0cf7d0a510aca12727a2bcfa5",
+    "browser_patches/firefox/juggler/protocol/Dispatcher.js": "8c96ba079948b61564d8a775c30c65ec8fe505df39a1fbfbb6c491765fdd9bd3",
+    "browser_patches/firefox/juggler/protocol/PageHandler.js": "53769b6f2e0307969d6dcb69216fd755ee019004d5b4f35126db726424ff3d74",
+    "browser_patches/firefox/juggler/protocol/PrimitiveTypes.js": "6a2df4c37bca85b81675cfc7c890d18dcb0489f7fee4c8bc35b1065b39e912e4",
+    "browser_patches/firefox/juggler/protocol/Protocol.js": "abfc8e6b90442b8a1d94f9076124766eef33793f9e0bc3e689e7c1c739573004",
+    "browser_patches/firefox/juggler/screencast/HeadlessWindowCapturer.cpp": "4af6d6b4d286fe5c1efb25ba59ba10dbfb8a3120139c7d9e0272ddff48cbc480",
+    "browser_patches/firefox/juggler/screencast/HeadlessWindowCapturer.h": "d8abe8a01ff6ea7d1264b4f357025ee2bd9eb335b48bbfb176a552630b285294",
+    "browser_patches/firefox/juggler/screencast/components.conf": "fbaef0eebc2cf6cd18f0e67c0ccfbeb2fa4cf64049553d89d22905209b2262ff",
+    "browser_patches/firefox/juggler/screencast/moz.build": "536e8a30d4dc8a264e6f3d38c8be9e7df62362d3a29a05f85a8d3f70e2c1cbe6",
+    "browser_patches/firefox/juggler/screencast/nsIScreencastService.idl": "bc3e352e80247229b563171f5b6e4cd756b46f27bb072e391c2965a9a251ecf2",
+    "browser_patches/firefox/juggler/screencast/nsScreencastService.cpp": "09c9d6d4be210046011a5b8f42089c18fd1cd2d6df3ccb2a64bf2a8caff9acfd",
+    "browser_patches/firefox/juggler/screencast/nsScreencastService.h": "f695ec35ad4894149e58dd9a039b6eaa691ce9031de45b1b761b37ea949d1382",
+    "browser_patches/firefox/patches/bootstrap.diff": "6df2e68bb4bc46909f3fb22792f87b41f51a60e7f173ee4163b58711375ff9cf",
+    "browser_patches/firefox/preferences/00-playwright-prefs.js": "8c2d32801a924f2c2b133f1191d01213513c86e8d1e42e144e9cb1015ea71084",
+    "browser_patches/firefox/preferences/playwright.cfg": "a402c2879c854ee0031e1375fe109fc787506ec1aa61a484f547c33302a6c7c6"
+  }
+}
