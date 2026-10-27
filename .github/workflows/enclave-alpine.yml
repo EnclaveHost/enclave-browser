@@ -1,0 +1,39 @@
+name: Enclave Alpine browser
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  musl:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Policy and port integrity
+        run: |
+          node --experimental-vm-modules enclave/tests/policy.mjs
+          python3 enclave/alpine/verify.py
+      - name: Archive exact fork for APK build
+        run: |
+          mkdir -p out
+          git archive --prefix=enclave-browser/ HEAD > enclave-browser-source.tar
+          python3 - <<'PY'
+          import json, os, pathlib, tarfile, io
+          data = (json.dumps({'repository': os.environ['GITHUB_REPOSITORY'], 'commit': os.environ['GITHUB_SHA'], 'run_id': os.environ['GITHUB_RUN_ID']}, indent=2) + '\n').encode()
+          with tarfile.open('enclave-browser-source.tar', 'a') as archive:
+              entry = tarfile.TarInfo('enclave-browser/enclave/alpine/build-provenance.json')
+              entry.size = len(data)
+              archive.addfile(entry, io.BytesIO(data))
+          PY
+      - name: Compile, sign and qualify custom musl browser
+        run: |
+          docker run --rm --memory=6g --memory-swap=6g --cpus=2 \
+            -v "$PWD:/src:ro" -v "$PWD/out:/out" \
+            alpine@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a \
+            /bin/sh /src/enclave/alpine/ci.sh
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: enclave-browser-alpine-${{ github.sha }}
+          path: out/
+          retention-days: 7
