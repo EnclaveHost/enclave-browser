@@ -320,7 +320,9 @@ export class FrameTree {
 
   _onBrowsingContextAttached(browsingContext) {
     // If this browsing context doesn't belong to our frame tree - do nothing.
-    if (browsingContext.top !== this._rootBrowsingContext)
+    let root = browsingContext;
+    while (root.parent?.docShell) root = root.parent;
+    if (root !== this._rootBrowsingContext)
       return;
     this._createFrame(browsingContext);
   }
@@ -332,6 +334,11 @@ export class FrameTree {
   }
 
   _createFrame(browsingContext) {
+    let root = browsingContext;
+    while (root.parent?.docShell) root = root.parent;
+    if (root !== this._rootBrowsingContext) return;
+    if (!browsingContext.docShell || this.frameForBrowsingContext(browsingContext))
+      return;
     const parentFrame = this.frameForBrowsingContext(browsingContext.parent);
     if (!parentFrame && this._mainFrame) {
       dump(`WARNING: found docShell with the same root, but no parent!\n`);

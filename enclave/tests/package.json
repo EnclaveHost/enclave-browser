@@ -2,6 +2,7 @@
   "name": "enclave-browser-qualification",
   "private": true,
   "type": "module",
-  "scripts": {"smoke": "node smoke.mjs", "policy": "node --experimental-vm-modules policy.mjs"},
+  "scripts": {"smoke": "node smoke.mjs", "fission": "node fission-channel.mjs",
+    "policy": "node --experimental-vm-modules policy.mjs"},
   "devDependencies": {"playwright-core": "1.62.1"}
 }

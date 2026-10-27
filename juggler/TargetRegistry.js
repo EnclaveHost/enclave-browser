@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+const {FissionChannel} = ChromeUtils.importESModule('chrome://juggler/content/FissionChannel.js');
 const {Helper} = ChromeUtils.importESModule('chrome://juggler/content/Helper.js');
 const {Preferences} = ChromeUtils.importESModule("resource://gre/modules/Preferences.sys.mjs");
 const {ContextualIdentityService} = ChromeUtils.importESModule("resource://gre/modules/ContextualIdentityService.sys.mjs");
@@ -122,6 +123,7 @@ export class TargetRegistry {
     this._browserIdToTarget = new Map();
 
     this._browserIdToActor = new Map();
+    this._frameActors = new Set();
 
     this._proxiesWithClashingAuthCacheKeys = new Set();
     this._browserProxy = null;
@@ -241,18 +243,20 @@ export class TargetRegistry {
   }
 
   onActorCreated(actor) {
-    // Only interested in main frames for now.
-    if (actor.browsingContext.parent)
+    if (!actor.manager.isProcessRoot)
       return;
+    this._frameActors.add(actor);
 
     const browserId = actor.browsingContext.browserId;
-    this._browserIdToActor.set(browserId, actor);
+    if (!actor.browsingContext.parent)
+      this._browserIdToActor.set(browserId, actor);
 
     const target = this._browserIdToTarget.get(browserId);
     target?.setActor(actor);
   }
 
   onActorDestroyed(actor) {
+    this._frameActors.delete(actor);
     const browserId = actor.browsingContext.browserId;
     const target = this._browserIdToTarget.get(browserId);
     target?.removeActor(actor);
@@ -425,7 +429,7 @@ export class PageTarget {
     this._url = 'about:blank';
     this._openerId = opener ? opener.id() : undefined;
     this._actor = undefined;
-    this._channel = new SimpleChannel(`browser::page[${this._targetId}]`, 'target-' + this._targetId);
+    this._channel = new FissionChannel(SimpleChannel,`browser::page[${this._targetId}]`, 'target-' + this._targetId);
     this._screencastId = undefined;
     this._dialogs = new Map();
     this.forcedColors = 'none';
@@ -458,6 +462,10 @@ export class PageTarget {
     const actor = this._registry._browserIdToActor.get(browserId);
     if (actor)
       this.setActor(actor);
+    for (const childActor of this._registry._frameActors) {
+      if (childActor.browsingContext.browserId === browserId && childActor.browsingContext.parent)
+        this.setActor(childActor);
+    }
 
     this._registry.emit(TargetRegistry.Events.TargetCreated, this);
   }
@@ -491,17 +499,15 @@ export class PageTarget {
   }
 
   setActor(actor) {
-    this._actor = actor;
+    if (!actor.browsingContext.parent)
+      this._actor = actor;
     this._channel.bindToActor(actor);
   }
 
   removeActor(actor) {
-    // Note: the order between setActor and removeActor is non-deterministic.
-    // Therefore we check that we are still bound to the actor that is being removed.
-    if (this._actor !== actor)
-      return;
-    this._actor = undefined;
-    this._channel.resetTransport();
+    if (!actor) return;
+    this._channel.removeActor(actor);
+    if (this._actor === actor) this._actor = undefined;
   }
 
   _willChangeBrowserRemoteness() {
@@ -874,6 +880,7 @@ export class PageTarget {
   dispose() {
     this.ensureContextMenuClosed();
     this._disposed = true;
+    this._channel.dispose();
     this.stopScreencast();
     this._browserContext.pages.delete(this);
     this._registry._browserToTarget.delete(this._linkedBrowser);

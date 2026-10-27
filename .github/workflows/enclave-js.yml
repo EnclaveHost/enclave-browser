@@ -1,0 +1,46 @@
+name: Enclave browser JavaScript qualification
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  qualify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          sparse-checkout: |
+            enclave
+            juggler
+            security/manager/ssl
+            toolkit/components/enterprisepolicies
+            services/settings
+      - name: Policy and frame routing checks
+        run: |
+          node --experimental-vm-modules enclave/tests/policy.mjs
+          node enclave/tests/fission-channel.mjs
+      - name: Verify and prepare the compiled engine
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git fetch --depth=1 origin aef56cda0b64a556e6e1a76d08bd1b523e211e26
+          gh run download 40529984912 --name enclave-browser-investigation-aef56cda0b64a556e6e1a76d08bd1b523e211e26 --dir native
+          python3 enclave/tests/patch-package.py native/obj-enclave/dist/firefox-153.5.1.en-US.linux-x86_64.tar.xz candidate
+      - name: Native browser smoke test
+        env:
+          ENCLAVE_BROWSER_EXECUTABLE: ${{ github.workspace }}/candidate/firefox/firefox
+          ENCLAVE_TEST_ARTIFACTS: ${{ github.workspace }}/artifacts
+          DEBUG: pw:browser
+        run: |
+          mkdir -p artifacts
+          cd enclave/tests
+          npm ci --ignore-scripts --no-audit --no-fund
+          timeout 180 node smoke.mjs > ../../artifacts/smoke.log 2>&1
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: enclave-browser-js-${{ github.sha }}
+          path: artifacts/
+          retention-days: 7

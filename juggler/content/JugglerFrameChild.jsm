@@ -8,7 +8,7 @@ const helper = new Helper();
 
 let sameProcessInstanceNumber = 0;
 
-const topBrowingContextToAgents = new Map();
+const localRootToAgents = new Map();
 
 export class JugglerFrameChild extends JSWindowActorChild {
   constructor() {
@@ -36,10 +36,13 @@ export class JugglerFrameChild extends JSWindowActorChild {
   }
 
   _agents() {
-    return topBrowingContextToAgents.get(this.browsingContext.top);
+    let root = this.browsingContext;
+    while (root.parent?.docShell) root = root.parent;
+    return localRootToAgents.get(root);
   }
 
   actorCreated() {
+    this._isProcessRoot = this.manager.isProcessRoot;
     this.actorName = `content::${this.browsingContext.browserId}/${this.browsingContext.id}/${++sameProcessInstanceNumber}`;
 
     this._eventListeners.push(helper.addEventListener(this.contentWindow, 'load', event => {
@@ -49,14 +52,14 @@ export class JugglerFrameChild extends JSWindowActorChild {
     if (this.document.documentURI.startsWith('moz-extension://'))
       return;
 
-    // Child frame events will be forwarded to related top-level agents.
-    if (this.browsingContext.parent)
+    // Same-process children share their process-root agents.
+    if (!this._isProcessRoot)
       return;
 
-    let agents = topBrowingContextToAgents.get(this.browsingContext);
+    let agents = localRootToAgents.get(this.browsingContext);
     if (!agents) {
       agents = initialize(this.browsingContext, this.docShell);
-      topBrowingContextToAgents.set(this.browsingContext, agents);
+      localRootToAgents.set(this.browsingContext, agents);
     }
     agents.channel.bindToActor(this);
     agents.actor = this;
@@ -65,15 +68,15 @@ export class JugglerFrameChild extends JSWindowActorChild {
   didDestroy() {
     helper.removeListeners(this._eventListeners);
 
-    if (this.browsingContext.parent)
+    if (!this._isProcessRoot)
       return;
 
-    const agents = topBrowingContextToAgents.get(this.browsingContext);
+    const agents = localRootToAgents.get(this.browsingContext);
     // The agents are already re-bound to a new actor.
     if (agents?.actor !== this)
       return;
 
-    topBrowingContextToAgents.delete(this.browsingContext);
+    localRootToAgents.delete(this.browsingContext);
 
     agents.channel.resetTransport();
     agents.pageAgent.dispose();

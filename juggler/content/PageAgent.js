@@ -151,6 +151,7 @@ export class PageAgent {
         dispatchTouchEvent: this._dispatchTouchEvent.bind(this),
         dispatchTapEvent: this._dispatchTapEvent.bind(this),
         getContentQuads: this._getContentQuads.bind(this),
+        getScreenOrigin: this._getScreenOrigin.bind(this),
         insertText: this._insertText.bind(this),
         scrollIntoViewIfNeeded: this._scrollIntoViewIfNeeded.bind(this),
         setFileInputFiles: this._setFileInputFiles.bind(this),
@@ -324,7 +325,7 @@ export class PageAgent {
   _onFrameAttached(frame) {
     this._browserPage.emit('pageFrameAttached', {
       frameId: frame.id(),
-      parentFrameId: frame.parentFrame() ? frame.parentFrame().id() : undefined,
+      parentFrameId: frame._browsingContext.parent ? helper.browsingContextToFrameId(frame._browsingContext.parent) : undefined,
     });
   }
 
@@ -405,7 +406,12 @@ export class PageAgent {
         p4: {x: quad.p4.x, y: quad.p4.y},
       };
     });
-    return {quads};
+    return {quads, screenOrigin: this._getScreenOrigin()};
+  }
+
+  _getScreenOrigin() {
+    const win = this._frameTree.mainFrame().domWindow();
+    return { x: win.mozInnerScreenX, y: win.mozInnerScreenY };
   }
 
   _describeNode({objectId, frameId}) {
@@ -418,14 +424,14 @@ export class PageAgent {
     let contentFrame;
     let ownerFrame;
     for (const frame of frames) {
-      if (unsafeObject.contentWindow && frame.docShell() === unsafeObject.contentWindow.docShell)
+      if (unsafeObject.browsingContext === frame._browsingContext)
         contentFrame = frame;
       const document = frame.domWindow().document;
       if (unsafeObject === document || unsafeObject.ownerDocument === document)
         ownerFrame = frame;
     }
     return {
-      contentFrameId: contentFrame ? contentFrame.id() : undefined,
+      contentFrameId: unsafeObject.browsingContext ? helper.browsingContextToFrameId(unsafeObject.browsingContext) : contentFrame?.id(),
       ownerFrameId: ownerFrame ? ownerFrame.id() : undefined,
     };
   }

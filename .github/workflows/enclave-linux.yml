@@ -15,7 +15,9 @@ jobs:
         with:
           fetch-depth: 1
       - name: Policy checks
-        run: node --experimental-vm-modules enclave/tests/policy.mjs
+        run: |
+          node --experimental-vm-modules enclave/tests/policy.mjs
+          node enclave/tests/fission-channel.mjs
       - name: Bootstrap native build tools
         run: |
           mkdir -p artifacts "$MOZBUILD_STATE_PATH"

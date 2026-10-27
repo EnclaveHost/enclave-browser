@@ -12,6 +12,7 @@ jobs:
       - name: Policy and port integrity
         run: |
           node --experimental-vm-modules enclave/tests/policy.mjs
+          node enclave/tests/fission-channel.mjs
           python3 enclave/alpine/verify.py
       - name: Archive exact fork for APK build
         run: |

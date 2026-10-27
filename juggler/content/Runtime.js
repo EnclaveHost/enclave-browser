@@ -14,7 +14,7 @@ if (!this.Debugger) {
 
 let lastId = 0;
 function generateId() {
-  return 'id-' + (++lastId);
+  return 'id-' + (typeof Services === 'undefined' ? 'worker' : Services.appinfo.processID) + '-' + (++lastId);
 }
 
 const consoleLevelToProtocolType = {

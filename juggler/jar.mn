@@ -12,6 +12,7 @@ juggler.jar:
   content/ChannelEventSink.sys.mjs (ChannelEventSink.sys.mjs)
   content/TargetRegistry.js (TargetRegistry.js)
   content/SimpleChannel.js (SimpleChannel.js)
+  content/FissionChannel.js (FissionChannel.js)
   content/JugglerFrameParent.jsm (JugglerFrameParent.jsm)
   content/protocol/PrimitiveTypes.js (protocol/PrimitiveTypes.js)
   content/protocol/Protocol.js (protocol/Protocol.js)
