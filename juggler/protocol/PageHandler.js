@@ -510,7 +510,7 @@ export class PageHandler {
           {
             isDOMEventSynthesized: true,
             isWidgetEventSynthesized: false,
-            isAsyncEnabled: false,
+            isAsyncEnabled: true,
           },
           resolve
         )));

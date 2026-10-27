@@ -64,7 +64,13 @@ try {
     const frame = page.frameLocator('iframe');
     await frame.getByLabel('Name').fill('isolated frame');
     assert.equal(await frame.getByLabel('Name').inputValue(), 'isolated frame');
+    await frame.locator('body').evaluate(body => {
+      window.inputEvents = [];
+      for (const type of ['pointerdown', 'pointerup', 'mousedown', 'mouseup', 'click'])
+        body.addEventListener(type, e => window.inputEvents.push({ type, tag: e.target.tagName, x: e.clientX, y: e.clientY }), true);
+    });
     await frame.getByRole('button', { name: 'Submit' }).click();
+    console.log('Isolated frame input events:', await frame.locator('body').evaluate(() => window.inputEvents));
     await frame.locator('#result').filter({ hasText: 'isolated frame' }).waitFor();
     assert.equal(await frame.locator('#result').textContent(), 'isolated frame');
   });
