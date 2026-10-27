@@ -40,6 +40,8 @@ jobs:
           name: enclave-browser-investigation-${{ github.sha }}
           path: |
             artifacts/
+            obj-enclave/config.log
+            obj-enclave/.mozbuild/logs/build/warnings_*.json
             obj-enclave/dist/*.tar.xz
             obj-enclave/dist/*.tar.gz
             obj-enclave/dist/*.tar.bz2

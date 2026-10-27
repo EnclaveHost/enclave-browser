@@ -1,3 +1,4 @@
+ac_add_options --enable-bootstrap
 ac_add_options --enable-application=browser
 ac_add_options --with-branding=browser/branding/enclave
 ac_add_options --enable-optimize
