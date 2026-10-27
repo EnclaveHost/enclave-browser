@@ -65,6 +65,7 @@ try {
     await frame.getByLabel('Name').fill('isolated frame');
     assert.equal(await frame.getByLabel('Name').inputValue(), 'isolated frame');
     await frame.getByRole('button', { name: 'Submit' }).click();
+    await frame.locator('#result').filter({ hasText: 'isolated frame' }).waitFor();
     assert.equal(await frame.locator('#result').textContent(), 'isolated frame');
   });
   await check('TLS bypass is rejected', () => assert.rejects(browser.newContext({ ignoreHTTPSErrors: true }), /Enclave Browser policy forbids/));
