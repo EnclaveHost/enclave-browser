@@ -356,7 +356,8 @@ export class PageAgent {
       throw new Error('Failed to find frame with id = ' + frameId);
     let unsafeObject;
     if (!objectId) {
-      unsafeObject = frame.domWindow().frameElement;
+      unsafeObject = frame._browsingContext.embedderElement;
+      if (!unsafeObject) return { remoteObject: null };
     } else {
       unsafeObject = frame.unsafeObject(objectId);
     }
