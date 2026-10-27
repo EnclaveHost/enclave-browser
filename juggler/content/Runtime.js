@@ -308,7 +308,7 @@ class Runtime {
     }
     if (!this._pendingPromises.size)
       this._debugger.onPromiseSettled = undefined;
-    this._debugger.removeDebuggee(destroyedContext._contextGlobal);
+    this._debugger.removeDebuggee(destroyedContext._debuggee);
     this._executionContexts.delete(destroyedContext._id);
     if (destroyedContext._domWindow)
       this._windowToExecutionContext.delete(destroyedContext._domWindow);

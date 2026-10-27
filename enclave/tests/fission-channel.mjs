@@ -60,6 +60,8 @@ mux.removeActor(replacement);
 await assert.rejects(page.send('evaluate', { executionContextId: 'replacement' }), /destroyed/);
 assert.equal(remote.disposed, true);
 assert.equal(events.filter(e => e.name === 'pageFrameDetached').length, 1);
+mainEvents.runtimeExecutionContextCreated({ executionContextId: 'returned', auxData: { frameId: 'child' } });
+assert.equal(await page.send('describeNode', { frameId: 'child' }), 'page/main');
 mux.dispose();
 assert.equal(main.disposed, true);
 console.log('PASS: isolated frame routing, context lifecycle, setting broadcasts, stale actor rejection and cleanup');

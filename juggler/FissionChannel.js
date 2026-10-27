@@ -43,7 +43,10 @@ export class FissionChannel {
             if (known) return;
           }
           if (method === 'pageFrameDetached') this._frames.delete(event.frameId);
-          if (method === 'runtimeExecutionContextCreated') this._contexts.set(event.executionContextId, endpoint);
+          if (method === 'runtimeExecutionContextCreated') {
+            this._contexts.set(event.executionContextId, endpoint);
+            if (event.auxData?.frameId) this._frames.set(event.auxData.frameId, endpoint);
+          }
           if (method === 'runtimeExecutionContextDestroyed') this._contexts.delete(event.executionContextId);
           if (method === 'pageWorkerCreated') this._workers.set(event.workerId, endpoint);
           if (method === 'pageWorkerDestroyed') this._workers.delete(event.workerId);
@@ -118,7 +121,7 @@ export class FissionChannel {
         else if (method === 'insertText' || method === 'dispatchKeyEvent') {
           let focused = Services.focus.focusedContentBrowsingContext;
           if (focused?.top === this._main.actor?.browsingContext) {
-            while (focused.parent && !this._children.has(focused.id)) focused = focused.parent;
+            while (focused.parent && !this._children.get(focused.id)?.actor) focused = focused.parent;
             endpoint = this._children.get(focused.id) || this._main;
           }
         }
