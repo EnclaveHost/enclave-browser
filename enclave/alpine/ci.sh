@@ -15,8 +15,8 @@ su builder -c 'cd /home/builder/aports/enclave/enclave-browser && abuild checksu
 cp -a /home/builder/packages/enclave /out/repository
 cp /home/builder/.abuild/*.pub /out/
 printf '\n/home/builder/packages/enclave\n' >>/etc/apk/repositories
-apk add --no-cache enclave-browser nodejs npm
+apk add --no-cache enclave-browser nodejs npm ffmpeg
 /usr/bin/enclave-firefox --version > /out/version.txt
 cp -a /src/enclave/tests /home/builder/tests
 chown -R builder:builder /home/builder/tests /out
-su builder -c 'cd /home/builder/tests && npm ci --ignore-scripts --no-audit --no-fund && ENCLAVE_BROWSER_EXECUTABLE=/usr/bin/enclave-firefox ENCLAVE_TEST_ARTIFACTS=/out/smoke timeout 180 node smoke.mjs' > /out/smoke.log 2>&1
+su builder -c 'cd /home/builder/tests && node media-fixture.mjs && npm ci --ignore-scripts --no-audit --no-fund && ENCLAVE_BROWSER_EXECUTABLE=/usr/bin/enclave-firefox ENCLAVE_TEST_ARTIFACTS=/out/smoke timeout 180 node smoke.mjs' > /out/smoke.log 2>&1

@@ -35,7 +35,9 @@ jobs:
           DEBUG: pw:browser
         run: |
           mkdir -p artifacts
+          command -v ffmpeg || (sudo apt-get update && sudo apt-get install -y ffmpeg)
           cd enclave/tests
+          node media-fixture.mjs
           npm ci --ignore-scripts --no-audit --no-fund
           timeout 180 node smoke.mjs > ../../artifacts/smoke.log 2>&1
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

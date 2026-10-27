@@ -8,7 +8,12 @@ const executablePath = process.env.ENCLAVE_BROWSER_EXECUTABLE;
 if (!executablePath) throw new Error('Set ENCLAVE_BROWSER_EXECUTABLE to the built Enclave Browser');
 const artifacts = path.resolve(process.env.ENCLAVE_TEST_ARTIFACTS || 'artifacts');
 await fs.mkdir(artifacts, { recursive: true });
+const media = await fs.readFile(new URL('./media.webm', import.meta.url));
 const server = http.createServer((req, res) => {
+  if (req.url === '/media.webm') {
+    res.writeHead(200, { 'Content-Type': 'video/webm', 'Content-Length': media.length });
+    return res.end(media);
+  }
   if (req.url === '/download') {
     res.writeHead(200, { 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename=example.txt' });
     return res.end('enclave download');
@@ -85,6 +90,23 @@ try {
     await page.locator('iframe').evaluate(frame => frame.remove());
     await page.getByLabel('Name').fill('top-level focus restored');
     assert.equal(await page.getByLabel('Name').inputValue(), 'top-level focus restored');
+  });
+  await check('960x600 VP9 video decoding', async () => {
+    const decoded = await page.evaluate(async () => {
+      const video = document.createElement('video');
+      video.muted = true; video.src = '/media.webm'; document.body.append(video);
+      try {
+        const ended = new Promise((resolve, reject) => {
+          video.onended = resolve;
+          video.onerror = () => reject(new Error(`Video decode error ${video.error?.code}`));
+          setTimeout(() => reject(new Error('Video playback timed out')), 15000);
+        });
+        await video.play(); await ended;
+        return { width: video.videoWidth, height: video.videoHeight, frames: video.getVideoPlaybackQuality().totalVideoFrames };
+      } finally { video.remove(); }
+    });
+    assert.equal(decoded.width, 960); assert.equal(decoded.height, 600);
+    assert.ok(decoded.frames >= 25, JSON.stringify(decoded));
   });
   await check('TLS bypass is rejected', () => assert.rejects(browser.newContext({ ignoreHTTPSErrors: true }), /Enclave Browser policy forbids/));
   await check('CSP bypass is rejected', () => assert.rejects(browser.newContext({ bypassCSP: true }), /Enclave Browser policy forbids/));

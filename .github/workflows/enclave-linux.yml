@@ -33,7 +33,9 @@ jobs:
           ENCLAVE_BROWSER_EXECUTABLE: ${{ github.workspace }}/obj-enclave/dist/bin/firefox
           ENCLAVE_TEST_ARTIFACTS: ${{ github.workspace }}/artifacts/smoke
         run: |
+          command -v ffmpeg || (sudo apt-get update && sudo apt-get install -y ffmpeg)
           cd enclave/tests
+          node media-fixture.mjs
           npm ci --ignore-scripts --no-audit --no-fund
           timeout 180s npm run smoke > ../../artifacts/smoke.log 2>&1
       - name: Preserve logs and investigation package
