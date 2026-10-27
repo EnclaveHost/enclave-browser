@@ -1,6 +1,7 @@
 #!/bin/sh
 set -eux
 apk add --no-cache alpine-sdk sudo python3
+apk update
 adduser -D builder
 addgroup builder abuild
 printf 'builder ALL=(ALL) NOPASSWD: ALL\n' >/etc/sudoers.d/builder
