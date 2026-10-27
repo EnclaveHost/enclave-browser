@@ -23,5 +23,11 @@
       "path": "patches/stab.h",
       "sha256": "960d82bbfdc88c95f5cb4f2e1c1bf23dae7519b3b7203914d7b3ddbff1ba4c28"
     }
+  ],
+  "build_tools": [
+    {
+      "path": "cbindgen-0.29.4.tar.gz",
+      "sha256": "2ecb53484c9c167ba674026b656d8a27d7657a58e6066aa902bfb1a4aa00ae20"
+    }
   ]
 }

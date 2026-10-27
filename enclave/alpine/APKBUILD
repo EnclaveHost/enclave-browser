@@ -6,21 +6,22 @@ url="https://github.com/EnclaveHost/enclave-browser"
 arch="x86_64 riscv64"
 license="MPL-2.0 AND GPL-2.0-or-later AND LGPL-2.1-or-later"
 depends="ffmpeg7-libavcodec"
-makedepends="alsa-lib-dev aom-dev automake bsd-compat-headers cargo cbindgen
+makedepends="alsa-lib-dev aom-dev automake bsd-compat-headers cargo
  clang22 clang22-libclang compiler-rt dav1d-dev dbus-dev gtk+3.0-dev icu-dev
  libevent-dev libffi-dev libjpeg-turbo-dev libnotify-dev libogg-dev libtheora-dev
  libtool libvorbis-dev libvpx-dev libwebp-dev libxcomposite-dev libxt-dev lld22
  llvm22-dev m4 mesa-dev nasm nodejs npm nspr-dev nss-dev pciutils pipewire-dev
  pulseaudio-dev py3-mozshellutil python3 wasi-compiler-rt~22 wasi-sdk
  wireless-tools-dev zip"
-source="enclave-browser-source.tar"
+source="enclave-browser-source.tar
+ cbindgen-0.29.4.tar.gz::https://static.crates.io/crates/cbindgen/cbindgen-0.29.4.crate"
 builddir="$srcdir/enclave-browser"
 ldpath="/usr/lib/enclave-browser"
 sonameprefix="$pkgname:"
 options="!check" # policy and browser qualification run after signed APK installation
 prepare() {
     default_prepare
-    python3 enclave/alpine/verify.py
+    python3 enclave/alpine/verify.py "$srcdir"
     for p in enclave/alpine/patches/*.patch; do
         patch --batch --fuzz=0 -p1 < "$p"
     done
@@ -34,6 +35,8 @@ build() {
     export CBUILD CHOST
     export LDFLAGS="$LDFLAGS -Wl,-rpath,/usr/lib/enclave-browser"
     unset CARGO_PROFILE_RELEASE_OPT_LEVEL CARGO_PROFILE_RELEASE_LTO
+    cargo install --locked --path "$srcdir/cbindgen-0.29.4" --root "$srcdir/toolchain" -j 2
+    export PATH="$srcdir/toolchain/bin:$PATH"
     ./mach build
 }
 package() {
