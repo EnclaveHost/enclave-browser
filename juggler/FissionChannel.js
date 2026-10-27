@@ -115,6 +115,13 @@ export class FissionChannel {
       if (namespace === 'page') {
         if (options.executionContextId) endpoint = this._contexts.get(options.executionContextId);
         else if (options.frameId) endpoint = this._frames.get(options.frameId);
+        else if (method === 'insertText' || method === 'dispatchKeyEvent') {
+          let focused = Services.focus.focusedContentBrowsingContext;
+          if (focused?.top === this._main.actor?.browsingContext) {
+            while (focused.parent && !this._children.has(focused.id)) focused = focused.parent;
+            endpoint = this._children.get(focused.id) || this._main;
+          }
+        }
       } else if (namespace) endpoint = this._workers.get(namespace);
       if (!endpoint) throw new Error('Execution context or frame was destroyed');
       const result = await connector(endpoint).send(method, ...args);

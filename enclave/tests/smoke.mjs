@@ -63,6 +63,7 @@ try {
     console.log('Frame tree before iframe interaction:', page.frames().map(f => ({ url: f.url(), parent: f.parentFrame()?.url() })));
     const frame = page.frameLocator('iframe');
     await frame.getByLabel('Name').fill('isolated frame');
+    assert.equal(await frame.getByLabel('Name').inputValue(), 'isolated frame');
     await frame.getByRole('button', { name: 'Submit' }).click();
     assert.equal(await frame.locator('#result').textContent(), 'isolated frame');
   });
