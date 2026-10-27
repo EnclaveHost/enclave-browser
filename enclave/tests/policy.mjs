@@ -17,6 +17,7 @@ for (const pref of ['browser.safebrowsing.malware.enabled', 'browser.safebrowsin
   assert.equal(locked.get(pref), true, pref);
 assert.equal(defaults.get('dom.ipc.processCount'), 2);
 assert.equal(defaults.get('layout.frame_rate'), 30);
+assert.equal(defaults.get('accessibility.force_disabled'), 0);
 
 async function activation(flag, environment) {
   let actors = 0;

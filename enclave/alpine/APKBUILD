@@ -1,0 +1,50 @@
+pkgname=enclave-browser
+pkgver=153.5.1
+pkgrel=0
+pkgdesc="Enclave Firefox ESR with protected JIT and opt-in pipe automation"
+url="https://github.com/EnclaveHost/enclave-browser"
+arch="x86_64 riscv64"
+license="MPL-2.0 AND GPL-2.0-or-later AND LGPL-2.1-or-later"
+depends="ffmpeg7-libavcodec"
+makedepends="alsa-lib-dev aom-dev automake bsd-compat-headers cargo cbindgen
+ clang22 clang22-libclang compiler-rt dav1d-dev dbus-dev gtk+3.0-dev icu-dev
+ libevent-dev libffi-dev libjpeg-turbo-dev libnotify-dev libogg-dev libtheora-dev
+ libtool libvorbis-dev libvpx-dev libwebp-dev libxcomposite-dev libxt-dev lld22
+ llvm22-dev m4 mesa-dev nasm nodejs npm nspr-dev nss-dev pciutils pipewire-dev
+ pulseaudio-dev py3-mozshellutil python3 wasi-compiler-rt22 wasi-sdk
+ wireless-tools-dev zip"
+source="enclave-browser-source.tar"
+builddir="$srcdir/enclave-browser"
+ldpath="/usr/lib/enclave-browser"
+sonameprefix="$pkgname:"
+options="!check" # policy and browser qualification run after signed APK installation
+prepare() {
+    default_prepare
+    python3 enclave/alpine/verify.py
+    for p in enclave/alpine/patches/*.patch; do
+        patch --batch --fuzz=0 -p1 < "$p"
+    done
+    cp enclave/alpine/patches/stab.h toolkit/crashreporter/google-breakpad/src/
+}
+build() {
+    export CC=clang-22 CXX=clang++-22 SHELL=/bin/sh
+    export MACH_BUILD_PYTHON_NATIVE_PACKAGE_SOURCE=system
+    export MOZBUILD_STATE_PATH="$srcdir/mozbuild"
+    export MOZCONFIG="$builddir/enclave/alpine/mozconfig"
+    export CBUILD CHOST
+    export LDFLAGS="$LDFLAGS -Wl,-rpath,/usr/lib/enclave-browser"
+    unset CARGO_PROFILE_RELEASE_OPT_LEVEL CARGO_PROFILE_RELEASE_LTO
+    ./mach build
+}
+package() {
+    DESTDIR="$pkgdir" ./mach install
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/enclave-firefox" <<'WRAPPER'
+#!/bin/sh
+exec /usr/lib/enclave-browser/firefox "$@"
+WRAPPER
+    rm -f "$pkgdir/usr/lib/enclave-browser/firefox-bin"
+    ln -s firefox "$pkgdir/usr/lib/enclave-browser/firefox-bin"
+    install -Dm644 enclave/alpine/build-provenance.json "$pkgdir/usr/share/enclave-browser/build-provenance.json"
+    test -s "$pkgdir/usr/lib/enclave-browser/enclave.cfg"
+    test -s "$pkgdir/usr/lib/enclave-browser/defaults/pref/enclave.js"
+}

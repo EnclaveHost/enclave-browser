@@ -1,0 +1,27 @@
+{
+  "repository": "https://github.com/alpinelinux/aports",
+  "commit": "11163576edc8df724000096fdb82eeb30df58fb0",
+  "path": "community/firefox",
+  "files": [
+    {
+      "path": "patches/fix-fortify-system-wrappers.patch",
+      "sha256": "02bd9f80206f6eaf01ea23ef2b8c2a8dc4b5332b35637de2cb3f9437013b7c3a"
+    },
+    {
+      "path": "patches/lfs64.patch",
+      "sha256": "99134a19fb77d5d7658ae87a33f0e0dbeefd76eada99a64817204f9b778307b2"
+    },
+    {
+      "path": "patches/musl-no-linux-prctl.patch",
+      "sha256": "ddb8b08adccd505c5b6c85f79ebcc3444424629e706f9349c355ab5c6bf6bda2"
+    },
+    {
+      "path": "patches/wasip1.patch",
+      "sha256": "3630b66cf667a8b61f624cf89ebd0ec7de24c8054f523f3cb2bd3ab5e793df81"
+    },
+    {
+      "path": "patches/stab.h",
+      "sha256": "960d82bbfdc88c95f5cb4f2e1c1bf23dae7519b3b7203914d7b3ddbff1ba4c28"
+    }
+  ]
+}

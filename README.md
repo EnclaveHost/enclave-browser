@@ -74,8 +74,10 @@ builds are not the source baseline for this fork.
 
 This is a **development fork, not a qualified browser release**. The native
 Playwright patch applies cleanly to the exact ESR base. Policy, branding,
-packaging, and validation code are in the tree. Compilation and end-to-end tests
-must pass before this replaces the browser in the running VM.
+packaging, and validation code are in the tree. The native engine compiled and
+packaged successfully in run 40529984912. Page interaction, context cookies,
+network interception, downloads, TLS rejection and CSP rejection passed. The
+cross-site iframe test failed, so this remains unqualified for replacement.
 
 Full Playwright compatibility is not established. In particular, upstream Juggler
 assumes cross-process iframes are disabled; Enclave keeps them enabled. Cross-origin
@@ -173,3 +175,16 @@ per-file licenses and [Mozilla license information](LICENSE).
 [Playwright repository license](enclave/PLAYWRIGHT-LICENSE) are included.
 Firefox and Mozilla are Mozilla trademarks. Enclave Browser is an independent
 fork and is not an official Mozilla product.
+
+## Alpine / Enclave OS packaging
+
+`enclave/alpine/APKBUILD` builds the same fork against musl, with Enclave branding,
+locked policy and Juggler retained. The manual `Enclave Alpine browser` workflow
+archives its exact Git commit, verifies pinned Alpine portability patches, builds
+and signs an APK in a disposable container, then installs it and runs the browser
+qualification suite. Signing keys are temporary CI keys, not a production feed.
+The package provides `enclave-firefox`; the OS owns the desktop launcher.
+
+The initial musl build targets x86-64. The recipe declares the intended RV64 target,
+but an RV64 build and both platform runtime checks remain release gates. No stock
+Firefox binary is repackaged as Enclave Browser. Accessibility is enabled by default.

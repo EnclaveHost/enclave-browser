@@ -3,5 +3,5 @@ set -eu
 export DISPLAY="${DISPLAY:-:0}"
 export GDK_BACKEND=x11 GDK_CORE_DEVICE_EVENTS=1 MOZ_USE_XINPUT2=0
 export LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER="${GALLIUM_DRIVER:-llvmpipe}" LP_NUM_THREADS=1
-export GTK_THEME="${GTK_THEME:-RiscBox}" NO_AT_BRIDGE=1 GTK_A11Y=none
+export GTK_THEME="${GTK_THEME:-RiscBox}"
 exec "${ENCLAVE_BROWSER_EXECUTABLE:-/opt/enclave-browser/firefox}" "$@"
