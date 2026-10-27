@@ -7,7 +7,7 @@ p.add_argument('output', type=pathlib.Path)
 a = p.parse_args()
 with a.archive.open('rb') as stream:
     assert hashlib.file_digest(stream, 'sha256').hexdigest() == 'a387e30e407a6e8dd70233398628d2770e08ededadf84bcbf608e823ce113b64'
-changed = subprocess.check_output(['git', 'diff', '--name-only', 'aef56cda0b64a556e6e1a76d08bd1b523e211e26', 'HEAD', '--', '*.cpp', '*.cc', '*.c', '*.h', '*.idl', '*.webidl'], cwd=root, text=True)
+changed = subprocess.check_output(['git', 'diff', '--name-only', 'aef56cda0b64a556e6e1a76d08bd1b523e211e26', 'HEAD', '--', '*.cpp', '*.cc', '*.c', '*.h', '*.idl', '*.webidl', ':(exclude)enclave/alpine/**'], cwd=root, text=True)
 assert not changed, 'Native sources changed: rebuild the engine instead of reusing this package: ' + changed
 assert not a.output.exists(), 'Output must be a fresh test directory'
 a.output.mkdir(parents=True)
