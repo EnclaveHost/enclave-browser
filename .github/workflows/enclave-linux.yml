@@ -10,7 +10,6 @@ jobs:
     env:
       MOZBUILD_STATE_PATH: ${{ github.workspace }}/.mozbuild
       MOZCONFIG: ${{ github.workspace }}/enclave/mozconfig
-      MOZ_AUTOMATION: "1"
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -34,7 +33,7 @@ jobs:
         run: |
           cd enclave/tests
           npm ci --ignore-scripts --no-audit --no-fund
-          npm run smoke > ../../artifacts/smoke.log 2>&1
+          timeout 180s npm run smoke > ../../artifacts/smoke.log 2>&1
       - name: Preserve logs and investigation package
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
