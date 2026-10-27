@@ -942,11 +942,9 @@ nsresult nsHttpChannel::OnBeforeConnect() {
   // SecurityInfo.sys.mjs
   mLoadInfo->SetHstsStatus(isSecureURI);
 
-  RefPtr<mozilla::dom::BrowsingContext> bc;
-  mLoadInfo->GetBrowsingContext(getter_AddRefs(bc));
   // If bypassing the cache and we're forced offline
   // we can just return the error here.
-  if (bc && bc->Top()->GetForceOffline() &&
+  if (IsForcedOffline() &&
       BYPASS_LOCAL_CACHE(mLoadFlags, LoadPreferCacheLoadOverBypass())) {
     return NS_ERROR_OFFLINE;
   }
@@ -1066,9 +1064,7 @@ nsresult nsHttpChannel::MaybeUseHTTPSRRForUpgrade(bool aShouldUpgrade,
     return aStatus;
   }
 
-  RefPtr<mozilla::dom::BrowsingContext> bc;
-  mLoadInfo->GetBrowsingContext(getter_AddRefs(bc));
-  bool forceOffline = bc && bc->Top()->GetForceOffline();
+  bool forceOffline = IsForcedOffline();
 
   if (mURI->SchemeIs("https") || aShouldUpgrade || !LoadUseHTTPSSVC() ||
       forceOffline) {
@@ -1531,15 +1527,14 @@ nsresult nsHttpChannel::ContinueConnect() {
                      "CORS preflight must have been finished by the time we "
                      "do the rest of ContinueConnect");
 
-  RefPtr<mozilla::dom::BrowsingContext> bc;
-  mLoadInfo->GetBrowsingContext(getter_AddRefs(bc));
+  bool isForcedOffline = IsForcedOffline();
 
   // we may or may not have a cache entry at this point
   if (mCacheEntry) {
     // read straight from the cache if possible...
     if (CachedContentIsValid()) {
       // If we're forced offline, and set to bypass the cache, return offline.
-      if (bc && bc->Top()->GetForceOffline() &&
+      if (isForcedOffline &&
           BYPASS_LOCAL_CACHE(mLoadFlags, LoadPreferCacheLoadOverBypass())) {
         return NS_ERROR_OFFLINE;
       }
@@ -1581,7 +1576,7 @@ nsresult nsHttpChannel::ContinueConnect() {
   }
 
   // We're about to hit the network. Don't if we're forced offline.
-  if (bc && bc->Top()->GetForceOffline()) {
+  if (isForcedOffline) {
     return NS_ERROR_OFFLINE;
   }
 
@@ -1689,12 +1684,9 @@ void nsHttpChannel::SpeculativeConnect() {
   // don't speculate if we are offline, when doing http upgrade (i.e.
   // websockets bootstrap), or if we can't do keep-alive (because then we
   // couldn't reuse the speculative connection anyhow).
-  RefPtr<mozilla::dom::BrowsingContext> bc;
-  mLoadInfo->GetBrowsingContext(getter_AddRefs(bc));
-
   if (gIOService->IsOffline() || mUpgradeProtocolCallback ||
       !(mCaps & NS_HTTP_ALLOW_KEEPALIVE) ||
-      (bc && bc->Top()->GetForceOffline())) {
+      IsForcedOffline()) {
     return;
   }
 
@@ -4992,7 +4984,7 @@ nsresult nsHttpChannel::OpenCacheEntryInternal(bool isHttps) {
     return NS_OK;
   }
 
-  bool forceOffline = bc && bc->Top()->GetForceOffline();
+  bool forceOffline = IsForcedOffline();
   if (offline || (mLoadFlags & INHIBIT_CACHING) || forceOffline) {
     if (BYPASS_LOCAL_CACHE(mLoadFlags, LoadPreferCacheLoadOverBypass()) &&
         !offline && !forceOffline) {
@@ -8289,6 +8281,20 @@ void nsHttpChannel::MaybeStartDNSPrefetch() {
                     StaticPrefs::network_dns_disableIPv6();
     (void)mDNSPrefetch->PrefetchHighPerFamily(dnsFlags, skipIPv4, skipIPv6);
   }
+}
+
+bool nsHttpChannel::IsForcedOffline() {
+  RefPtr<mozilla::dom::BrowsingContext> bc;
+  mLoadInfo->GetBrowsingContext(getter_AddRefs(bc));
+  if (bc && bc->Top()->GetForceOffline())
+    return true;
+
+  RefPtr<mozilla::dom::BrowsingContext> wbc;
+  mLoadInfo->GetAssociatedBrowsingContext(getter_AddRefs(wbc));
+  if (wbc && wbc->Top()->GetForceOffline())
+    return true;
+
+  return false;
 }
 
 NS_IMETHODIMP

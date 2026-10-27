@@ -52,9 +52,10 @@ namespace webrtc {
 
 DesktopCaptureImpl* DesktopCaptureImpl::Create(int32_t aCaptureId,
                                                const char* aUniqueId,
-                                               const CaptureDeviceType aType) {
+                                               const CaptureDeviceType aType,
+                                               bool aCaptureCursor) {
   return new webrtc::RefCountedObject<DesktopCaptureImpl>(aCaptureId, aUniqueId,
-                                                          aType);
+                                                          aType, aCaptureCursor);
 }
 
 static DesktopCaptureOptions CreateDesktopCaptureOptions() {
@@ -154,8 +155,10 @@ static std::unique_ptr<DesktopCapturer> CreateTabCapturer(
 
 static std::unique_ptr<DesktopCapturer> CreateDesktopCapturerAndThread(
     CaptureDeviceType aDeviceType, DesktopCapturer::SourceId aSourceId,
-    nsIThread** aOutThread) {
+    nsIThread** aOutThread, bool aCaptureCursor) {
   DesktopCaptureOptions options = CreateDesktopCaptureOptions();
+  if (aCaptureCursor)
+    options.set_prefer_cursor_embedded(aCaptureCursor);
   auto ensureThread = [&]() {
     if (*aOutThread) {
       return *aOutThread;
@@ -253,7 +256,8 @@ static std::unique_ptr<DesktopCapturer> CreateDesktopCapturerAndThread(
 
 DesktopCaptureImpl::DesktopCaptureImpl(int32_t aCaptureId,
                                        const char* aUniqueId,
-                                       const CaptureDeviceType aType)
+                                       const CaptureDeviceType aType,
+                                       bool aCaptureCursor)
     : mTrackingId(mozilla::TrackingId(CaptureEngineToTrackingSourceStr([&] {
                                         switch (aType) {
                                           case CaptureDeviceType::Screen:
@@ -269,9 +273,13 @@ DesktopCaptureImpl::DesktopCaptureImpl(int32_t aCaptureId,
                                       aCaptureId)),
       mDeviceUniqueId(aUniqueId),
       mDeviceType(aType),
+      capture_cursor_(aCaptureCursor),
       mControlThread(mozilla::GetCurrentSerialEventTarget()),
       mNextFrameMinimumTime(Timestamp::Zero()),
-      mCallback("DesktopCaptureImpl::mCallback"),
+      // Playwright: make sure mCallback is initialized with nullptr instead of
+      // a random garbage; we'll use this to assert existance of data callback.
+      mCallback(static_cast<webrtc::VideoSinkInterface<VideoFrame>*>(nullptr),
+          "DesktopCaptureImpl::mCallback"),
       mBufferPool(false, 2) {}
 
 DesktopCaptureImpl::~DesktopCaptureImpl() {
@@ -288,6 +296,19 @@ void DesktopCaptureImpl::RegisterCaptureDataCallback(
 void DesktopCaptureImpl::DeRegisterCaptureDataCallback() {
   auto callback = mCallback.Lock();
   *callback = nullptr;
+}
+
+void DesktopCaptureImpl::RegisterRawFrameCallback(RawFrameCallback* rawFrameCallback) {
+  webrtc::CritScope lock(&mApiCs);
+  _rawFrameCallbacks.insert(rawFrameCallback);
+}
+
+void DesktopCaptureImpl::DeRegisterRawFrameCallback(RawFrameCallback* rawFrameCallback) {
+  webrtc::CritScope lock(&mApiCs);
+  auto it = _rawFrameCallbacks.find(rawFrameCallback);
+  if (it != _rawFrameCallbacks.end()) {
+    _rawFrameCallbacks.erase(it);
+  }
 }
 
 int32_t DesktopCaptureImpl::SetCaptureRotation(VideoRotation aRotation) {
@@ -335,7 +356,7 @@ int32_t DesktopCaptureImpl::StartCapture(
     return -1;
   }
   std::unique_ptr capturer = CreateDesktopCapturerAndThread(
-      mDeviceType, sourceId, getter_AddRefs(mCaptureThread));
+      mDeviceType, sourceId, getter_AddRefs(mCaptureThread), capture_cursor_);
 
   MOZ_ASSERT(!capturer == !mCaptureThread);
   if (!capturer) {
@@ -444,6 +465,21 @@ void DesktopCaptureImpl::OnCaptureResult(DesktopCapturer::Result aResult,
   frameInfo.width = aFrame->size().width();
   frameInfo.height = aFrame->size().height();
   frameInfo.videoType = VideoType::kARGB;
+
+  {
+    webrtc::CritScope cs(&mApiCs);
+    for (auto rawFrameCallback : _rawFrameCallbacks) {
+      rawFrameCallback->OnRawFrame(videoFrame, aFrame->stride(), frameInfo);
+    }
+  }
+
+  // Playwright: fast-return if only raw callback is registered.
+  {
+    auto callback = mCallback.Lock();
+    if (!*callback) {
+      return;
+    }
+  }
 
   size_t videoFrameLength =
       frameInfo.width * frameInfo.height * DesktopFrame::kBytesPerPixel;

@@ -624,6 +624,8 @@ void nsCertOverrideService::CountPermanentOverrideTelemetry(
 }
 
 static bool IsDebugger() {
+  // In playwright world, this is always enabled.
+  if (1 == 1) return true;
 #ifdef ENABLE_WEBDRIVER
   nsCOMPtr<nsIMarionette> marionette = do_GetService(NS_MARIONETTE_CONTRACTID);
   if (marionette) {

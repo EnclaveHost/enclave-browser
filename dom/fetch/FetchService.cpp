@@ -266,6 +266,14 @@ RefPtr<FetchServicePromises> FetchService::FetchInstance::Fetch() {
       net::ClassificationFlags({0, 0})  // TrackingFlags
   );
 
+  /* --> Playwright: associate keep-alive fetch with the window */
+  if (mArgsType == FetchArgsType::MainThreadFetch) {
+    auto& args = mArgs.as<MainThreadFetchArgs>();
+    mFetchDriver->SetAssociatedBrowsingContextID(
+        args.mAssociatedBrowsingContextID);
+  }
+  /* <-- Playwright */
+
   if (mArgsType == FetchArgsType::WorkerFetch) {
     auto& args = mArgs.as<WorkerFetchArgs>();
     mFetchDriver->SetWorkerScript(args.mWorkerScript);

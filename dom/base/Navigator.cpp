@@ -2381,7 +2381,8 @@ bool Navigator::Webdriver() {
   }
 #endif
 
-  return false;
+  // Playwright is automating the browser, so we should pretend to be a webdriver
+  return true;
 }
 
 AutoplayPolicy Navigator::GetAutoplayPolicy(AutoplayPolicyMediaType aType) {

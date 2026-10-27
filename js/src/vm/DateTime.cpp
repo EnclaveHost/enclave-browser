@@ -810,7 +810,6 @@ void js::DateTimeInfo::internalResyncICUDefaultTimeZone() {
 #if JS_HAS_INTL_API
   if (const char* tzenv = std::getenv("TZ")) {
     std::string_view tz(tzenv);
-
     mozilla::Span<const char> tzid;
 
 #  if defined(XP_WIN)

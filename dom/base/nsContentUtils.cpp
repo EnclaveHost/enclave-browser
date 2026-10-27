@@ -9904,6 +9904,7 @@ Result<bool, nsresult> nsContentUtils::SynthesizeMouseEvent(
   EventMessage msg;
   Maybe<WidgetMouseEvent::ExitFrom> exitFrom;
   bool contextMenuKey = false;
+  bool isPWDragEventMessage = false;
   if (aType.EqualsLiteral("mousedown")) {
     msg = eMouseDown;
   } else if (aType.EqualsLiteral("mouseup")) {
@@ -9930,13 +9931,26 @@ Result<bool, nsresult> nsContentUtils::SynthesizeMouseEvent(
     msg = eMouseHitTest;
   } else if (aType.EqualsLiteral("MozMouseExploreByTouch")) {
     msg = eMouseExploreByTouch;
+  } else if (aType.EqualsLiteral("dragover")) {
+    msg = eDragOver;
+    isPWDragEventMessage = true;
+  } else if (aType.EqualsLiteral("drop")) {
+    msg = eDrop;
+    isPWDragEventMessage = true;
   } else {
     return Err(NS_ERROR_FAILURE);
   }
 
   Maybe<WidgetPointerEvent> pointerEvent;
   Maybe<WidgetMouseEvent> mouseEvent;
-  if (IsPointerEventMessage(msg)) {
+  Maybe<WidgetDragEvent> pwDragEvent;
+
+  if (isPWDragEventMessage) {
+    pwDragEvent.emplace(true, msg, aWidget);
+    pwDragEvent->mReason = aOptions.mIsWidgetEventSynthesized
+                             ? WidgetMouseEvent::eSynthesized
+                             : WidgetMouseEvent::eReal;
+  } else if (IsPointerEventMessage(msg)) {
     if (MOZ_UNLIKELY(aOptions.mIsWidgetEventSynthesized)) {
       MOZ_ASSERT_UNREACHABLE(
           "The event shouldn't be dispatched as a synthesized event");
@@ -9964,6 +9978,7 @@ Result<bool, nsresult> nsContentUtils::SynthesizeMouseEvent(
   mozilla::widget::AutoSynthesizedEventCallbackNotifier notifier(callback);
 
   WidgetMouseEvent& mouseOrPointerEvent =
+      pwDragEvent.isSome() ? pwDragEvent.ref() :
       pointerEvent.isSome() ? pointerEvent.ref() : mouseEvent.ref();
   mouseOrPointerEvent.pointerId = aMouseEventData.mIdentifier;
   mouseOrPointerEvent.mModifiers =
@@ -9989,6 +10004,7 @@ Result<bool, nsresult> nsContentUtils::SynthesizeMouseEvent(
       aOptions.mIsDOMEventSynthesized;
   mouseOrPointerEvent.mExitFrom = std::move(exitFrom);
   mouseOrPointerEvent.mCallbackId = notifier.SaveCallback();
+  mouseOrPointerEvent.convertToPointer = aOptions.mJugglerConvertToPointer;
 
   nsPresContext* presContext = aPresShell->GetPresContext();
   if (!presContext) {

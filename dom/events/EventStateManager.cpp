@@ -2104,6 +2104,25 @@ static BrowserParent* GetBrowserParentAncestor(BrowserParent* aBrowserParent) {
   return bbp->Manager();
 }
 
+// Playwright: automation can move the mouse between different top-level
+// windows while expecting the previous window to keep its hover state.
+// Suppress the old remote's synthesized exit for that cross-window handoff.
+// See https://github.com/microsoft/playwright/issues/40562
+static bool PlaywrightSuppressMouseExit(
+    const WidgetMouseEvent* aMouseEvent, BrowserParent* aRemoteTarget,
+    BrowserParent* aOldRemoteTarget) {
+  if (!aMouseEvent->mFlags.mIsSynthesizedForTests || !aRemoteTarget ||
+      !aOldRemoteTarget) {
+    return false;
+  }
+
+  nsCOMPtr<nsIWidget> remoteTopLevelWidget = aRemoteTarget->GetTopLevelWidget();
+  nsCOMPtr<nsIWidget> oldRemoteTopLevelWidget =
+      aOldRemoteTarget->GetTopLevelWidget();
+  return remoteTopLevelWidget && oldRemoteTopLevelWidget &&
+         remoteTopLevelWidget != oldRemoteTopLevelWidget;
+}
+
 static void DispatchCrossProcessMouseExitEvents(WidgetMouseEvent* aMouseEvent,
                                                 BrowserParent* aRemoteTarget,
                                                 BrowserParent* aStopAncestor,
@@ -2227,7 +2246,7 @@ void EventStateManager::DispatchCrossProcessEvent(WidgetEvent* aEvent,
       if (mouseEvent->mReason == WidgetMouseEvent::eReal &&
           remote != oldRemote) {
         MOZ_ASSERT(mouseEvent->mMessage != eMouseExitFromWidget);
-        if (oldRemote) {
+        if (oldRemote && !PlaywrightSuppressMouseExit(mouseEvent, remote, oldRemote)) {
           BrowserParent* commonAncestor =
               nsContentUtils::GetCommonBrowserParentAncestor(remote, oldRemote);
           if (commonAncestor == oldRemote) {

@@ -63,7 +63,7 @@ class nsGeolocationService final : public nsIGeolocationUpdate,
 
   nsGeolocationService() = default;
 
-  nsresult Init();
+  nsresult Init(bool isOverride = false);
 
   // Management of the Geolocation objects
   void AddLocator(mozilla::dom::Geolocation* aLocator);
@@ -87,6 +87,8 @@ class nsGeolocationService final : public nsIGeolocationUpdate,
   // Update the accuracy and notify the provider if changed
   void UpdateAccuracy(bool aForceHigh = false);
   bool HighAccuracyRequested();
+
+  bool IsOverride();
 
  private:
   ~nsGeolocationService();
@@ -114,6 +116,8 @@ class nsGeolocationService final : public nsIGeolocationUpdate,
   // Nothing() if not being started, or a boolean reflecting the requested
   // accuracy.
   mozilla::Maybe<bool> mStarting;
+
+  bool mIsOverride = false;
 };
 
 namespace mozilla::dom {

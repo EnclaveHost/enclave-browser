@@ -316,6 +316,11 @@ void CanonicalBrowsingContext::ReplacedBy(
   txn.SetInnerSizeSpoofedForRFP(GetInnerSizeSpoofedForRFP());
   txn.SetIPAddressSpace(GetIPAddressSpace());
   txn.SetParentalControlsEnabled(GetParentalControlsEnabled());
+  txn.SetPrefersReducedMotionOverride(GetPrefersReducedMotionOverride());
+  txn.SetForcedColorsOverride(GetForcedColorsOverride());
+  // Playwright: make sure touch events override is propagated to the nested
+  // browsing context. See https://bugzilla.mozilla.org/show_bug.cgi?id=2014330
+  txn.SetTouchEventsOverrideInternal(GetTouchEventsOverrideInternal());
 
   if (!GetLanguageOverride().IsEmpty()) {
     // Reapply language override to update the corresponding realm.
@@ -1959,6 +1964,12 @@ void CanonicalBrowsingContext::LoadURI(nsIURI* aURI,
     (void)SetIsCaptivePortalTab(true);
   }
 
+  {
+    nsCOMPtr<nsIObserverService> observerService = mozilla::services::GetObserverService();
+    if (observerService) {
+      observerService->NotifyObservers(ToSupports(this), "juggler-navigation-started-browser", NS_ConvertASCIItoUTF16(nsPrintfCString("%" PRIu64, loadState->GetLoadIdentifier())).get());
+    }
+  }
   LoadURI(loadState, true);
 }
 

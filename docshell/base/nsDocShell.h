@@ -15,6 +15,7 @@
 #include "mozilla/dom/BrowsingContext.h"
 #include "mozilla/dom/NavigationBinding.h"
 #include "mozilla/dom/SessionHistoryEntry.h"
+#include "mozilla/dom/Element.h"
 #include "mozilla/dom/WindowProxyHolder.h"
 #include "nsCOMPtr.h"
 #include "nsCharsetSource.h"
@@ -84,6 +85,7 @@ class nsCommandManager;
 class nsDocShellEditorData;
 class nsDOMNavigationTiming;
 class nsDSURIContentListener;
+class nsGeolocationService;
 class nsGlobalWindowOuter;
 
 class FramingChecker;
@@ -396,6 +398,15 @@ class nsDocShell final : public nsDocLoader,
 
   void SetWillChangeProcess() { mWillChangeProcess = true; }
   bool WillChangeProcess() { return mWillChangeProcess; }
+
+  bool IsFileInputInterceptionEnabled();
+  void FilePickerShown(mozilla::dom::Element* element);
+
+  bool ShouldOverrideHasFocus() const;
+
+  bool IsBypassCSPEnabled();
+
+  RefPtr<nsGeolocationService> GetGeolocationServiceOverride();
 
   // Creates a real network channel (not a DocumentChannel) using the specified
   // parameters.
@@ -988,6 +999,8 @@ class nsDocShell final : public nsDocLoader,
 
   bool CSSErrorReportingEnabled() const { return mCSSErrorReportingEnabled; }
 
+  nsDocShell* GetRootDocShell();
+
   // Handles retrieval of subframe session history for nsDocShell::LoadURI. If a
   // load is requested in a subframe of the current DocShell, the subframe
   // loadType may need to reflect the loadType of the parent document, or in
@@ -1299,6 +1312,16 @@ class nsDocShell final : public nsDocLoader,
   bool mAllowDNSPrefetch : 1;
   bool mAllowWindowControl : 1;
   bool mCSSErrorReportingEnabled : 1;
+  bool mFileInputInterceptionEnabled: 1;
+  bool mOverrideHasFocus : 1;
+  bool mBypassCSPEnabled : 1;
+  bool mForceActiveState : 1;
+  bool mDisallowBFCache : 1;
+  RefPtr<nsGeolocationService> mGeolocationServiceOverride;
+  ReducedMotionOverride mReducedMotionOverride;
+  ForcedColorsOverride mForcedColorsOverride;
+  ContrastOverride mContrastOverride;
+
   bool mAllowAuth : 1;
   bool mAllowKeywordFixup : 1;
   bool mDisableMetaRefreshWhenInactive : 1;

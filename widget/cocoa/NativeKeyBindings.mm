@@ -618,6 +618,10 @@ void NativeKeyBindings::GetEditCommandsForTests(
       break;
     case KEY_NAME_INDEX_ArrowUp:
       if (aEvent.IsControl()) {
+        if (aEvent.IsMeta() || aEvent.IsAlt())
+          break;
+        instance->AppendEditCommandsForSelector(
+          ToObjcSelectorPtr(@selector(scrollPageUp:)), aCommands);
         break;
       }
       if (aEvent.IsMeta()) {
@@ -655,6 +659,10 @@ void NativeKeyBindings::GetEditCommandsForTests(
       break;
     case KEY_NAME_INDEX_ArrowDown:
       if (aEvent.IsControl()) {
+        if (aEvent.IsMeta() || aEvent.IsAlt())
+          break;
+        instance->AppendEditCommandsForSelector(
+          ToObjcSelectorPtr(@selector(scrollPageDown:)), aCommands);
         break;
       }
       if (aEvent.IsMeta()) {

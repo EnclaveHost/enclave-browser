@@ -112,6 +112,8 @@ void HeadlessWidget::Destroy() {
     }
   }
 
+  SetSnapshotListener(nullptr);
+
   nsIWidget::OnDestroy();
 
   nsIWidget::Destroy();
@@ -571,6 +573,15 @@ nsresult HeadlessWidget::SynthesizeNativeTouchpadPan(
   DispatchPanGestureInput(input);
 
   return NS_OK;
+}
+
+void HeadlessWidget::SetSnapshotListener(SnapshotListener&& listener) {
+  if (!mCompositorWidget) {
+    if (listener)
+      fprintf(stderr, "Trying to set SnapshotListener without compositor widget\n");
+    return;
+  }
+  mCompositorWidget->SetSnapshotListener(std::move(listener));
 }
 
 }  // namespace widget
