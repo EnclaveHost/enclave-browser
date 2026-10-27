@@ -11,7 +11,7 @@ makedepends="alsa-lib-dev aom-dev automake bsd-compat-headers cargo cbindgen
  libevent-dev libffi-dev libjpeg-turbo-dev libnotify-dev libogg-dev libtheora-dev
  libtool libvorbis-dev libvpx-dev libwebp-dev libxcomposite-dev libxt-dev lld22
  llvm22-dev m4 mesa-dev nasm nodejs npm nspr-dev nss-dev pciutils pipewire-dev
- pulseaudio-dev py3-mozshellutil python3 wasi-compiler-rt22 wasi-sdk
+ pulseaudio-dev py3-mozshellutil python3 wasi-compiler-rt~22 wasi-sdk
  wireless-tools-dev zip"
 source="enclave-browser-source.tar"
 builddir="$srcdir/enclave-browser"
