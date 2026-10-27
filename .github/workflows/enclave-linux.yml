@@ -21,6 +21,8 @@ jobs:
         run: |
           mkdir -p artifacts "$MOZBUILD_STATE_PATH"
           ./mach --no-interactive bootstrap --application-choice=browser > artifacts/bootstrap.log 2>&1
+      - name: Resolve Mozilla toolchain definitions
+        run: ./mach taskgraph tasks -k fetch -k toolchain -J --output-file artifacts/toolchain-tasks.json -p enclave/toolchain-parameters.json > artifacts/toolchain-taskgraph.log 2>&1
       - name: Compile native engine
         run: ./mach build > artifacts/build.log 2>&1
       - name: Package
