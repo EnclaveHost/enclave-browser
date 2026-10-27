@@ -426,7 +426,7 @@ export class PageAgent {
     for (const frame of frames) {
       if (unsafeObject.browsingContext === frame._browsingContext)
         contentFrame = frame;
-      const document = frame.domWindow().document;
+      const document = frame.domWindow()?.document;
       if (unsafeObject === document || unsafeObject.ownerDocument === document)
         ownerFrame = frame;
     }

@@ -337,7 +337,7 @@ export class FrameTree {
     let root = browsingContext;
     while (root.parent?.docShell) root = root.parent;
     if (root !== this._rootBrowsingContext) return;
-    if (!browsingContext.docShell || this.frameForBrowsingContext(browsingContext))
+    if (this.frameForBrowsingContext(browsingContext))
       return;
     const parentFrame = this.frameForBrowsingContext(browsingContext.parent);
     if (!parentFrame && this._mainFrame) {
