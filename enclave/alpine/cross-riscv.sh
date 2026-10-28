@@ -2,7 +2,7 @@
 set -eux
 srcdir=/build
 . /src/enclave/alpine/APKBUILD
-apk add --no-cache alpine-sdk sudo $makedepends
+apk add --no-cache alpine-sdk sudo curl $makedepends
 apk --root /target --arch riscv64 --initdb --no-scripts --keys-dir /etc/apk/keys \
     --repositories-file /etc/apk/repositories add \
     build-base linux-headers rust alsa-lib-dev aom-dev dav1d-dev dbus-dev gtk+3.0-dev \
