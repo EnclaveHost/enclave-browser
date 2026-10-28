@@ -45,7 +45,7 @@ export PATH="/build/toolchain/bin:$PATH"
 ./mach build
 DESTDIR=/out/root ./mach install
 cp enclave/alpine/build-provenance.json /out/
-readelf -h /out/root/usr/lib/enclave-browser/firefox >/out/elf-header.txt
+readelf -h /out/root/usr/lib/enclave-browser/enclave-browser >/out/elf-header.txt
 tar -C /out/root -czf /out/enclave-browser-riscv64-candidate.tar.gz .
 rm -rf /out/root
 BUILD

@@ -1,0 +1,51 @@
+name: Package preserved custom musl browser build
+on:
+  workflow_dispatch:
+    inputs:
+      source_run:
+        required: true
+      platform:
+        type: choice
+        options: [amd64, riscv64]
+        default: amd64
+permissions:
+  contents: read
+  actions: read
+jobs:
+  package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130
+        if: inputs.platform == 'riscv64'
+        with:
+          platforms: riscv64
+          image: tonistiigi/binfmt@sha256:400a4873b838d1b89194d982c45e5fb3cda4593fbfd7e08a02e76b03b21166f0
+      - name: Recover exact compiled candidate and provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_RUN: ${{ inputs.source_run }}
+          PLATFORM: ${{ inputs.platform }}
+        run: |
+          [[ "$SOURCE_RUN" =~ ^[0-9]+$ ]]
+          mkdir candidate out
+          gh run view "$SOURCE_RUN" --json databaseId,headSha,conclusion,status > source-run.json
+          test "$(jq -r .status source-run.json)" = completed
+          sha=$(jq -r .headSha source-run.json)
+          if [ "$PLATFORM" = riscv64 ]; then artifact="enclave-browser-riscv64-$sha"; else artifact="enclave-browser-alpine-$sha"; fi
+          gh run download "$SOURCE_RUN" --name "$artifact" --dir candidate
+          cp source-run.json candidate/
+      - name: Sign installed package and execute the target browser
+        run: |
+          docker run --rm --memory=4g --memory-swap=4g --cpus=2 --platform linux/${{ inputs.platform }} \
+            -e ENCLAVE_PLATFORM=${{ inputs.platform }} -e ENCLAVE_PACKAGING_COMMIT=${{ github.sha }} \
+            -v "$PWD:/src:ro" -v "$PWD/candidate:/candidate:ro" -v "$PWD/out:/out" \
+            alpine@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a \
+            /bin/sh /src/enclave/alpine/repackage.sh
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: enclave-browser-alpine-${{ github.sha }}
+          path: out/
+          retention-days: 7

@@ -1,6 +1,6 @@
 pkgname=enclave-browser
 pkgver=153.5.1
-pkgrel=0
+pkgrel=1
 pkgdesc="Enclave Firefox ESR with protected JIT and opt-in pipe automation"
 url="https://github.com/EnclaveHost/enclave-browser"
 arch="x86_64 riscv64"
@@ -44,10 +44,10 @@ package() {
     DESTDIR="$pkgdir" ./mach install
     install -Dm755 /dev/stdin "$pkgdir/usr/bin/enclave-firefox" <<'WRAPPER'
 #!/bin/sh
-exec /usr/lib/enclave-browser/firefox "$@"
+exec /usr/lib/enclave-browser/enclave-browser "$@"
 WRAPPER
-    rm -f "$pkgdir/usr/lib/enclave-browser/firefox-bin"
-    ln -s firefox "$pkgdir/usr/lib/enclave-browser/firefox-bin"
+    rm -f "$pkgdir/usr/lib/enclave-browser/enclave-browser-bin"
+    ln -s enclave-browser "$pkgdir/usr/lib/enclave-browser/enclave-browser-bin"
     install -Dm644 enclave/alpine/build-provenance.json "$pkgdir/usr/share/enclave-browser/build-provenance.json"
     test -s "$pkgdir/usr/lib/enclave-browser/enclave.cfg"
     test -s "$pkgdir/usr/lib/enclave-browser/defaults/pref/enclave.js"
