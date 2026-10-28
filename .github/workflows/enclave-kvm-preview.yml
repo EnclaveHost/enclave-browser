@@ -10,14 +10,14 @@ permissions:
 jobs:
   preview:
     if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == 'EnclaveHost/enclave-browser'
-    uses: EnclaveHost/enclave-os/.github/workflows/preview.yml@ea4651e3fb91facc91b6f1590eeba15eb1c1fd1c
+    uses: EnclaveHost/enclave-os/.github/workflows/preview.yml@d4ac5b69f8f8de06a27f3be632d53e417c16605c
     with:
       browser_run_id: ${{ format('{0}', github.event.workflow_run.id) }}
-      source_ref: ea4651e3fb91facc91b6f1590eeba15eb1c1fd1c
+      source_ref: d4ac5b69f8f8de06a27f3be632d53e417c16605c
   kernel-policy:
     if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == 'EnclaveHost/enclave-browser'
-    uses: EnclaveHost/enclave-os/.github/workflows/browser-policy.yml@ea4651e3fb91facc91b6f1590eeba15eb1c1fd1c
+    uses: EnclaveHost/enclave-os/.github/workflows/browser-policy.yml@d4ac5b69f8f8de06a27f3be632d53e417c16605c
     with:
       browser_run: ${{ format('{0}', github.event.workflow_run.id) }}
       platform: amd64
-      source_ref: ea4651e3fb91facc91b6f1590eeba15eb1c1fd1c
+      source_ref: d4ac5b69f8f8de06a27f3be632d53e417c16605c
