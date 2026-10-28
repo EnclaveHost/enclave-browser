@@ -38,7 +38,7 @@ cxx_config=$(find /target/usr/include/c++ -path '*/bits/c++config.h')
 cxx_arch=${cxx_config%/bits/c++config.h}
 export CC='clang-22 --gcc-toolchain=/target/usr'
 export CXX="clang++-22 --gcc-toolchain=/target/usr -isystem $cxx_arch"
-export HOST_CFLAGS=-O2 HOST_CXXFLAGS=-O2
+unset HOST_CFLAGS HOST_CXXFLAGS
 export LDFLAGS='-Wl,-rpath,/usr/lib/enclave-browser'
 cargo install --locked --path /build/cbindgen-0.29.4 --root /build/toolchain -j2
 export PATH="/build/toolchain/bin:$PATH"
