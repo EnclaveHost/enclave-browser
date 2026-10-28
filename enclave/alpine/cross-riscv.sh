@@ -3,8 +3,10 @@ set -eux
 srcdir=/build
 . /src/enclave/alpine/APKBUILD
 apk add --no-cache alpine-sdk sudo curl $makedepends
-apk --root /target --arch riscv64 --initdb --no-scripts --keys-dir /etc/apk/keys \
-    --repositories-file /etc/apk/repositories add \
+mkdir -p /target/etc/apk/keys
+cp -L /usr/share/apk/keys/riscv64/*.pub /target/etc/apk/keys/
+cp /etc/apk/repositories /target/etc/apk/repositories
+apk --root /target --arch riscv64 --initdb --no-scripts add \
     build-base linux-headers rust alsa-lib-dev aom-dev dav1d-dev dbus-dev gtk+3.0-dev \
     icu-dev libevent-dev libffi-dev libjpeg-turbo-dev libogg-dev libtheora-dev \
     libvorbis-dev libvpx-dev libwebp-dev libxcomposite-dev libxt-dev mesa-dev nspr-dev \
