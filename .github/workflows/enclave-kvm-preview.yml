@@ -1,0 +1,23 @@
+name: Assemble separate KVM preview after qualified browser
+on:
+  workflow_run:
+    workflows: [Enclave Alpine browser]
+    types: [completed]
+    branches: [enclave-esr153]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  preview:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == 'EnclaveHost/enclave-browser'
+    uses: EnclaveHost/enclave-os/.github/workflows/preview.yml@ea4651e3fb91facc91b6f1590eeba15eb1c1fd1c
+    with:
+      browser_run_id: ${{ format('{0}', github.event.workflow_run.id) }}
+      source_ref: ea4651e3fb91facc91b6f1590eeba15eb1c1fd1c
+  kernel-policy:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == 'EnclaveHost/enclave-browser'
+    uses: EnclaveHost/enclave-os/.github/workflows/browser-policy.yml@ea4651e3fb91facc91b6f1590eeba15eb1c1fd1c
+    with:
+      browser_run: ${{ format('{0}', github.event.workflow_run.id) }}
+      platform: amd64
+      source_ref: ea4651e3fb91facc91b6f1590eeba15eb1c1fd1c
