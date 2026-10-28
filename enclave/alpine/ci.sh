@@ -11,7 +11,15 @@ cp /src/enclave-browser-source.tar /home/builder/aports/enclave/enclave-browser/
 chown -R builder:builder /home/builder
 su builder -c 'abuild-keygen -a -n'
 cp /home/builder/.abuild/*.pub /etc/apk/keys/
-su builder -c 'cd /home/builder/aports/enclave/enclave-browser && abuild checksum && abuild -r' > /out/build.log 2>&1
+if ! su builder -c 'cd /home/builder/aports/enclave/enclave-browser && abuild checksum && abuild -r' > /out/build.log 2>&1; then
+    candidate=/home/builder/aports/enclave/enclave-browser/pkg/enclave-browser
+    if [ -s "$candidate/usr/lib/enclave-browser/enclave-browser" ]; then
+        cp -a "$candidate" /out/root
+        cp /home/builder/aports/enclave/enclave-browser/src/enclave-browser/enclave/alpine/build-provenance.json /out/
+    fi
+    tail -n 80 /out/build.log
+    exit 1
+fi
 cp -a /home/builder/packages/enclave /out/repository
 cp /home/builder/.abuild/*.pub /out/
 printf '\n/home/builder/packages/enclave\n' >>/etc/apk/repositories

@@ -22,6 +22,13 @@ WRAPPER
     rm -f "$pkgdir/usr/lib/enclave-browser/firefox-bin" "$pkgdir/usr/lib/enclave-browser/enclave-browser-bin"
     ln -s enclave-browser "$pkgdir/usr/lib/enclave-browser/enclave-browser-bin"
     test -s "$pkgdir/usr/lib/enclave-browser/enclave.cfg"
-    test -s "$pkgdir/usr/lib/enclave-browser/defaults/pref/enclave.js"
+    python3 - "$pkgdir/usr/lib/enclave-browser" <<'VERIFY'
+import pathlib, sys, zipfile
+root = pathlib.Path(sys.argv[1])
+with zipfile.ZipFile(root / 'omni.ja') as archive:
+    loader = archive.read('defaults/pref/enclave.js').decode()
+assert 'pref("general.config.filename", "enclave.cfg");' in loader
+assert 'pref("general.config.obscure_value", 0);' in loader
+VERIFY
 }
 sha512sums=""

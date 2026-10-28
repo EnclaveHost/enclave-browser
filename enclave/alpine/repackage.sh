@@ -4,7 +4,7 @@ srcdir=/build
 . /src/enclave/alpine/APKBUILD
 apk add --no-cache alpine-sdk sudo python3 $makedepends
 mkdir -p /build/payload
-if [ "$ENCLAVE_PLATFORM" = riscv64 ]; then
+if [ -s /candidate/root/usr/lib/enclave-browser/enclave-browser ]; then
     cp -a /candidate/root/usr/lib/enclave-browser /build/payload/
     cp /candidate/build-provenance.json /build/payload/
 else
