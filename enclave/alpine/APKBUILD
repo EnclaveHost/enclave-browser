@@ -1,6 +1,6 @@
 pkgname=enclave-browser
 pkgver=153.5.1
-pkgrel=1
+pkgrel=2
 pkgdesc="Enclave Firefox ESR with protected JIT and opt-in pipe automation"
 url="https://github.com/EnclaveHost/enclave-browser"
 arch="x86_64 riscv64"
@@ -42,6 +42,9 @@ build() {
 }
 package() {
     DESTDIR="$pkgdir" ./mach install
+    # The shared desktop owns enclave-browser and applies its session profile.
+    # This package exposes the unconfigured executable as enclave-firefox.
+    rm -f "$pkgdir/usr/bin/enclave-browser"
     install -Dm755 /dev/stdin "$pkgdir/usr/bin/enclave-firefox" <<'WRAPPER'
 #!/bin/sh
 exec /usr/lib/enclave-browser/enclave-browser "$@"

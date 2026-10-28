@@ -1,6 +1,6 @@
 pkgname=enclave-browser
 pkgver=153.5.1
-pkgrel=1
+pkgrel=2
 pkgdesc="Enclave Firefox ESR with protected JIT and opt-in pipe automation"
 url="https://github.com/EnclaveHost/enclave-browser"
 arch="x86_64 riscv64"
