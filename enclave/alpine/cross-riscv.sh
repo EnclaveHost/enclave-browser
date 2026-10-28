@@ -33,7 +33,11 @@ export MOZCONFIG=/build/enclave-browser/enclave/alpine/mozconfig
 export CBUILD=x86_64-alpine-linux-musl CHOST=riscv64-alpine-linux-musl
 export ENCLAVE_CROSS_SYSROOT=/target
 export HOST_CC=clang-22 HOST_CXX=clang++-22
-export CC='clang-22 --gcc-toolchain=/target/usr' CXX='clang++-22 --gcc-toolchain=/target/usr'
+cxx_config=$(find /target/usr/include/c++ -path '*/bits/c++config.h')
+[ -f "$cxx_config" ]
+cxx_arch=${cxx_config%/bits/c++config.h}
+export CC='clang-22 --gcc-toolchain=/target/usr'
+export CXX="clang++-22 --gcc-toolchain=/target/usr -isystem $cxx_arch"
 export HOST_CFLAGS=-O2 HOST_CXXFLAGS=-O2
 export LDFLAGS='-Wl,-rpath,/usr/lib/enclave-browser'
 cargo install --locked --path /build/cbindgen-0.29.4 --root /build/toolchain -j2
