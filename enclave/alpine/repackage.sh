@@ -44,6 +44,7 @@ tar -cf /home/builder/aports/enclave/enclave-browser/browser-payload.tar -C /bui
 chown -R builder:builder /home/builder
 su builder -c 'abuild-keygen -a -n'
 cp /home/builder/.abuild/*.pub /etc/apk/keys/
+apk update
 su builder -c 'cd /home/builder/aports/enclave/enclave-browser && abuild checksum && abuild -r' >/out/package.log 2>&1
 cp -a /home/builder/packages/enclave /out/repository
 cp /home/builder/.abuild/*.pub /out/
